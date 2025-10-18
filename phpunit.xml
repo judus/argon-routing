@@ -7,10 +7,6 @@
          cacheResultFile=".phpunit.result.cache">
 
     <testsuites>
-        <testsuite name="application">
-            <directory suffix="Test.php">tests/applications/app-skeleton/tests/</directory>
-        </testsuite>
-
         <testsuite name="integration">
             <directory suffix="Test.php">tests/integration/</directory>
         </testsuite>

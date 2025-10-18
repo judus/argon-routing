@@ -20,9 +20,8 @@ final readonly class RouteMatcher implements RouteMatcherInterface
     {
         $method = strtoupper($request->getMethod());
         $uri = $this->normalizeUri($request->getUri()->getPath());
-        $routeMethodTag = "route.$method";
 
-        foreach ($this->routes->getRoutesFor($routeMethodTag) as $pattern => $meta) {
+        foreach ($this->routes->getRoutesFor($method) as $pattern => $meta) {
             $compiled = $meta['compiled'] ?? $pattern;
 
             if (!empty($compiled) && preg_match($compiled, $uri, $matches)) {
@@ -30,8 +29,8 @@ final readonly class RouteMatcher implements RouteMatcherInterface
                     method: $method,
                     name: $meta['name'] ?? $pattern,
                     pattern: $pattern,
-                    compiled: $compiled,
                     handler: $meta['handler'],
+                    compiled: $compiled,
                     pipelineId: $meta['pipelineId'] ?? null,
                     middlewares: $meta['middlewares'] ?? [],
                     arguments: $this->extractParams($matches),

@@ -45,8 +45,8 @@ final class ArgonRouter implements RouterInterface
             method: $method,
             name: $name ?? $fullPath,
             pattern: $fullPath,
-            compiled: $compiled,
             handler: $handler,
+            compiled: $compiled,
             pipelineId: $stack->getId(),
             middlewares: $stack->toArray(),
         );
@@ -88,6 +88,8 @@ final class ArgonRouter implements RouterInterface
         $expanded = [];
 
         foreach ($input as $alias) {
+            $matches = [];
+
             foreach ($meta as $class => $attributes) {
                 $groups = [];
 
@@ -98,12 +100,21 @@ final class ArgonRouter implements RouterInterface
                 }
 
                 if (in_array($alias, $groups, true)) {
-                    $expanded[] = $class;
+                    $matches[] = $class;
                 }
+            }
+
+            if ($matches === []) {
+                $expanded[] = $alias;
+                continue;
+            }
+
+            foreach ($matches as $class) {
+                $expanded[] = $class;
             }
         }
 
-        return $expanded !== [] ? array_unique($expanded) : $input;
+        return $expanded === [] ? $input : array_values(array_unique($expanded));
     }
 
     private function buildSortedStack(array $middleware, array $meta): MiddlewareStack
