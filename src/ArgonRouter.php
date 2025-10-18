@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing;
 
 use Maduser\Argon\Container\ArgonContainer;
-use Maduser\Argon\Contracts\MiddlewareStackInterface;
+use Maduser\Argon\Middleware\Contracts\MiddlewareStackInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;

@@ -2,7 +2,7 @@
 
 namespace Maduser\Argon\Routing\Middleware;
 
-use Maduser\Argon\Contracts\MiddlewareStackInterface;
+use Maduser\Argon\Middleware\Contracts\MiddlewareStackInterface;
 
 readonly class MiddlewareStack implements MiddlewareStackInterface
 {
