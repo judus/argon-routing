@@ -6,8 +6,8 @@ namespace Maduser\Argon\Routing;
 
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
+use Maduser\Argon\Routing\Exceptions\RouteNotFoundException;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
 
 final readonly class RouteMatcher implements RouteMatcherInterface
 {
@@ -38,7 +38,7 @@ final readonly class RouteMatcher implements RouteMatcherInterface
             }
         }
 
-        throw new RuntimeException("No route matched: " . strtoupper($method) . " $uri");
+        throw new RouteNotFoundException($method, $uri);
     }
 
     private function normalizeUri(string $uri): string
