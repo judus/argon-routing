@@ -7,6 +7,7 @@ namespace Maduser\Argon\Routing;
 use Maduser\Argon\Container\AbstractServiceProvider;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
+use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Contracts\Http\Server\Middleware\DispatcherInterface;
 use Maduser\Argon\Prophecy\Support\Tag;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
@@ -33,7 +34,9 @@ class ArgonRoutingServiceProvider extends AbstractServiceProvider
         $container->set(RouteManager::class, args: ['store' => $store])
             ->tag(['routing.manager']);
 
-        $container->set(RouterInterface::class, ArgonRouter::class)
+        $container->set(RouterInterface::class, ArgonRouter::class, [
+            'pipelines' => PipelineManagerInterface::class,
+        ])
             ->tag(['routing.router']);
 
         $container->set(RouteMatcherInterface::class, RouteMatcher::class)

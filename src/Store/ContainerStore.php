@@ -26,6 +26,7 @@ final readonly class ContainerStore implements RouteStoreInterface
     /** @inheritdoc */
     public function all(string $method): array
     {
+        $tag = 'route.' . strtoupper($method);
         /**
          * @var array<string, array{
          *     method: string,
@@ -37,7 +38,7 @@ final readonly class ContainerStore implements RouteStoreInterface
          *     middlewares?: list<class-string>
          * }>
          */
-        return $this->container->getTaggedMeta($method);
+        return $this->container->getTaggedMeta($tag);
     }
 
     public function get(string $routeKey): array
