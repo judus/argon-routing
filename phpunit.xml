@@ -8,7 +8,7 @@
 
     <testsuites>
         <testsuite name="integration">
-            <directory suffix="Test.php">tests/integration/</directory>
+            <directory suffix="Test.php">tests/Integration/</directory>
         </testsuite>
     </testsuites>
 

@@ -101,5 +101,5 @@ See the Argon container README for more patterns and advanced usage.
   store registered by the `ArgonRoutingServiceProvider`.
 - The `FileSystemStore` is a placeholder for potential standalone usage. It is
   not required when running inside Argon.
-- Shared interfaces (such as `ResultContextInterface`) live in the core Argon
+- Shared interfaces (such as `ResultContextInterface`) now ship with `maduser/argon-middleware`
   packages; make sure your project is aligned with the versions shipped there.

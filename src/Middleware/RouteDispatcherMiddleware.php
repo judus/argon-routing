@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Middleware;
 
 use Closure;
-use Maduser\Argon\Contracts\Http\Server\ResultContextInterface;
+use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;

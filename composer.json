@@ -6,6 +6,11 @@
             "Maduser\\Argon\\Routing\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Maduser\\Argon\\Routing\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Julien Duseyau",
