@@ -6,7 +6,7 @@ namespace Maduser\Argon\Routing;
 
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
-use Maduser\Argon\Routing\Exceptions\RouteNotFoundException;
+use Maduser\Argon\Routing\Exception\RouteNotFoundException;
 use Psr\Http\Message\ServerRequestInterface;
 
 final readonly class RouteMatcher implements RouteMatcherInterface

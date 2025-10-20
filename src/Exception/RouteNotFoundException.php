@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maduser\Argon\Routing\Exceptions;
+namespace Maduser\Argon\Routing\Exception;
 
 use RuntimeException;
 use Throwable;
