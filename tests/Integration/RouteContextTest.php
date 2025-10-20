@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
-use Maduser\Argon\Routing\ArgonRouter;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\RouteContext;
@@ -19,7 +19,7 @@ final class RouteContextTest extends TestCase
     {
         $container = new ArgonContainer();
         $routes = new RouteManager();
-        $router = new ArgonRouter($container, $routes);
+        $router = new Router($container, $routes);
         $router->get('/items/{id}', 'ItemController@show', middleware: ['auth'], name: 'items.show');
 
         $factory = new Psr17Factory();
@@ -43,7 +43,7 @@ final class RouteContextTest extends TestCase
     {
         $container = new ArgonContainer();
         $routes = new RouteManager();
-        $router = new ArgonRouter($container, $routes);
+        $router = new Router($container, $routes);
         $router->get('/static', 'StaticController@show', name: 'static.show');
 
         $factory = new Psr17Factory();

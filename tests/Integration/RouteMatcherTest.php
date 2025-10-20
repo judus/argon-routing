@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
-use Maduser\Argon\Routing\ArgonRouter;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ final class RouteMatcherTest extends TestCase
         $container = new ArgonContainer();
         $routes = new RouteManager();
 
-        $router = new ArgonRouter($container, $routes);
+        $router = new Router($container, $routes);
         $router->get('/users/{id}', 'UserController@show');
 
         $matcher = new RouteMatcher($routes);

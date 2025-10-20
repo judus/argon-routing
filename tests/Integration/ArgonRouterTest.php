@@ -7,7 +7,7 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Middleware\Contracts\MiddlewareStackInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
-use Maduser\Argon\Routing\ArgonRouter;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -23,7 +23,7 @@ final class ArgonRouterTest extends TestCase
         $routes = new RouteManager();
         $pipelines = new RecordingPipelineManager();
 
-        $router = new ArgonRouter($container, $routes, $pipelines);
+        $router = new Router($container, $routes, $pipelines);
         $router->add('get', '/users/{id}', 'UserController@show');
 
         $registered = $routes->getRoutesFor('GET');
@@ -47,9 +47,9 @@ final class ArgonRouterTest extends TestCase
 
         $routes = new RouteManager();
         $pipelines = new RecordingPipelineManager();
-        $router = new ArgonRouter($container, $routes, $pipelines);
+        $router = new Router($container, $routes, $pipelines);
 
-        $router->group(['api'], '/admin', function (ArgonRouter $router): void {
+        $router->group(['api'], '/admin', function (Router $router): void {
             $router->get('/dashboard', DummyRequestHandler::class, [ThirdMiddleware::class], 'admin.dashboard');
         });
 

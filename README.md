@@ -31,14 +31,14 @@ resolve the packages automatically.
 
 ```php
 use Maduser\Argon\Container\ArgonContainer;
-use Maduser\Argon\Routing\ArgonRouter;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Nyholm\Psr7\Factory\Psr17Factory;
 
 $container = new ArgonContainer();
 $routes = new RouteManager();                // defaults to the in-memory store
-$router = new ArgonRouter($container, $routes);
+$router = new Router($container, $routes);
 
 // Define routes just like in a typical HTTP kernel
 $router->get('/users/{id}', 'UsersController@show', middleware: ['auth']);

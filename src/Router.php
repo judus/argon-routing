@@ -11,7 +11,7 @@ use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use Closure;
 
-final class ArgonRouter implements RouterInterface
+final class Router implements RouterInterface
 {
     private ?PipelineManagerInterface $pipelines;
     private array $groupMiddleware = [];

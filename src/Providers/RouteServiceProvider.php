@@ -2,23 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Maduser\Argon\Routing;
+namespace Maduser\Argon\Routing\Providers;
 
 use Maduser\Argon\Container\AbstractServiceProvider;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
-use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Contracts\Http\Server\Middleware\DispatcherInterface;
+use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Prophecy\Support\Tag;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Middleware\RouteDispatcherMiddleware;
+use Maduser\Argon\Routing\RequestHandlerResolver;
+use Maduser\Argon\Routing\RouteContext;
+use Maduser\Argon\Routing\RouteManager;
+use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\Store\ContainerStore;
 
-class ArgonRoutingServiceProvider extends AbstractServiceProvider
+class RouteServiceProvider extends AbstractServiceProvider
 {
     /**
      * @throws ContainerException
@@ -34,7 +39,7 @@ class ArgonRoutingServiceProvider extends AbstractServiceProvider
         $container->set(RouteManager::class, args: ['store' => $store])
             ->tag(['routing.manager']);
 
-        $container->set(RouterInterface::class, ArgonRouter::class, [
+        $container->set(RouterInterface::class, Router::class, [
             'pipelines' => PipelineManagerInterface::class,
         ])
             ->tag(['routing.router']);
