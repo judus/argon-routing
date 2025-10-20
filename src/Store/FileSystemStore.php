@@ -6,6 +6,10 @@ use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use RuntimeException;
 
+/**
+ * Simple file-backed store reserved for potential standalone usage;
+ * not required when operating inside the Argon container stack.
+ */
 final class FileSystemStore implements RouteStoreInterface
 {
     public function __construct(
@@ -16,19 +20,6 @@ final class FileSystemStore implements RouteStoreInterface
     {
         $routes = $this->load();
         return $routes[strtolower($method)] ?? [];
-    }
-
-    public function get(string $routeKey): array
-    {
-        $routes = $this->load();
-
-        foreach ($routes as $group) {
-            if (isset($group[$routeKey])) {
-                return $group[$routeKey];
-            }
-        }
-
-        throw new RuntimeException("Route '{$routeKey}' not found in cache.");
     }
 
     public function add(RouteInterface $route): void

@@ -22,7 +22,6 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
     public function __construct(
         private ArgonContainer $container,
         private RoutePipeline $pipeline,
-        private RouteContextInterface $routeContext,
     ) {
     }
 
@@ -34,8 +33,6 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
     {
         /** @var MatchedRouteInterface|null $route */
         $route = $request->getAttribute(MatchedRouteInterface::class);
-
-        dd($this->routeContext->getRoute());
 
         if (!$route instanceof MatchedRouteInterface) {
             throw new RuntimeException('No resolved route found in request.');

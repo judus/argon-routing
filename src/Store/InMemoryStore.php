@@ -6,6 +6,10 @@ use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use RuntimeException;
 
+/**
+ * Lightweight store used primarily for tests; kept around as a placeholder
+ * should a standalone (non-container) variant ever materialise.
+ */
 final class InMemoryStore implements RouteStoreInterface
 {
     private array $routes = [];
@@ -13,16 +17,6 @@ final class InMemoryStore implements RouteStoreInterface
     public function all(string $method): array
     {
         return $this->routes[$method] ?? [];
-    }
-
-    public function get(string $routeKey): array
-    {
-        foreach ($this->routes as $group) {
-            if (isset($group[$routeKey])) {
-                return $group[$routeKey];
-            }
-        }
-        throw new RuntimeException("Route '{$routeKey}' not found.");
     }
 
     public function add(RouteInterface $route): void

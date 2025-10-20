@@ -41,10 +41,6 @@ final readonly class ContainerStore implements RouteStoreInterface
         return $this->container->getTaggedMeta($tag);
     }
 
-    public function get(string $routeKey): array
-    {
-    }
-
     /**
      * @throws ReflectionException
      * @throws ContainerException

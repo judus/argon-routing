@@ -37,11 +37,6 @@ final class RouteManager
         return $this->store->all($method);
     }
 
-    public function getMeta(string $routeKey): array
-    {
-        return $this->store->get($routeKey);
-    }
-
     public function register(RouteInterface $route): void
     {
         $this->store->add($route);

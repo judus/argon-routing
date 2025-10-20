@@ -24,7 +24,5 @@ interface RouteStoreInterface
      */
     public function all(string $method): array;
 
-    public function get(string $routeKey): array;
-
     public function add(RouteInterface $route): void;
 }
