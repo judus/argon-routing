@@ -9,6 +9,7 @@ use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Contracts\Http\Server\Middleware\DispatcherInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
+use Maduser\Argon\Middleware\MiddlewarePipeline;
 use Maduser\Argon\Prophecy\Support\Tag;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
@@ -22,6 +23,8 @@ use Maduser\Argon\Routing\RouteContext;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\Store\ContainerStore;
+use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteServiceProvider extends AbstractServiceProvider
 {
@@ -52,6 +55,13 @@ class RouteServiceProvider extends AbstractServiceProvider
 
         $container->set(RequestHandlerResolverInterface::class, RequestHandlerResolver::class)
             ->tag(['middleware.pipeline.resolver']);
+
+        $container->set(RoutingRequestHandlerFactory::class)
+            ->tag(['routing.request_handler_factory']);
+
+        $container->set(RequestHandlerInterface::class, MiddlewarePipeline::class)
+            ->factory(RoutingRequestHandlerFactory::class, 'create')
+            ->tag(['routing.request_handler']);
 
         /**
          * Override the default dispatcher middleware
