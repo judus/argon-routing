@@ -7,22 +7,20 @@ namespace Maduser\Argon\Routing\Provider;
 use Maduser\Argon\Container\AbstractServiceProvider;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
-use Maduser\Argon\Middleware\Contracts\Middleware\DispatcherInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Middleware\MiddlewarePipeline;
-use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
-use Maduser\Argon\Routing\Middleware\RouteDispatcherMiddleware;
+use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
 use Maduser\Argon\Routing\RequestHandlerResolver;
 use Maduser\Argon\Routing\RouteContext;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
+use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\Store\ContainerStore;
-use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
 use Override;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -37,37 +35,21 @@ class RouteServiceProvider extends AbstractServiceProvider
         $parameters = $container->getParameters();
         $store = (string) $parameters->get('routing.store', ContainerStore::class);
 
-        $container->set(RouteStoreInterface::class, ContainerStore::class)
-            ->tag(['routing.store']);
-
-        $container->set(RouteManager::class, args: ['store' => $store])
-            ->tag(['routing.manager']);
+        $container->set(RouteManager::class, args: ['store' => $store]);
 
         $container->set(RouterInterface::class, Router::class, [
             'pipelines' => PipelineManagerInterface::class,
-        ])
-            ->tag(['routing.router']);
+        ]);
 
-        $container->set(RouteMatcherInterface::class, RouteMatcher::class)
-            ->tag(['routing.matcher']);
+        $container->set(RouteMatcherInterface::class, RouteMatcher::class);
 
-        $container->set(RouteContextInterface::class, RouteContext::class)
-            ->tag(['routing.context']);
+        $container->set(RouteContextInterface::class, RouteContext::class);
 
-        $container->set(RequestHandlerResolverInterface::class, RequestHandlerResolver::class)
-            ->tag(['middleware.pipeline.resolver']);
+        $container->set(RequestHandlerResolverInterface::class, RequestHandlerResolver::class);
 
-        $container->set(RoutingRequestHandlerFactory::class)
-            ->tag(['routing.request_handler_factory']);
+        $container->set(RoutingRequestHandlerFactory::class);
 
         $container->set(RequestHandlerInterface::class, MiddlewarePipeline::class)
-            ->factory(RoutingRequestHandlerFactory::class, 'create')
-            ->tag(['routing.request_handler']);
-
-        /**
-         * Override the default dispatcher middleware
-         */
-//        $container->set(DispatcherInterface::class, RouteDispatcherMiddleware::class)
-//            ->tag([Tag::MIDDLEWARE_HTTP => ['priority' => 6000, 'group' => ['api', 'web']]]);
+            ->factory(RoutingRequestHandlerFactory::class, 'create');
     }
 }
