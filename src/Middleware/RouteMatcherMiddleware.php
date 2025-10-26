@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Middleware;
 
-use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
-use Monolog\Logger;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;

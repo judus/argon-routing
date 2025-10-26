@@ -9,10 +9,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-final class RoutingRequestHandlerFactory
+final readonly class RoutingRequestHandlerFactory
 {
     public function __construct(
-        private readonly RequestHandlerResolverInterface $resolver
+        private RequestHandlerResolverInterface $resolver
     ) {
     }
 
@@ -22,7 +22,7 @@ final class RoutingRequestHandlerFactory
 
         return new class($resolver) implements RequestHandlerInterface {
             public function __construct(
-                private RequestHandlerResolverInterface $resolver
+                private readonly RequestHandlerResolverInterface $resolver
             ) {
             }
 

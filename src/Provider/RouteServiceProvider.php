@@ -7,10 +7,9 @@ namespace Maduser\Argon\Routing\Provider;
 use Maduser\Argon\Container\AbstractServiceProvider;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
-use Maduser\Argon\Contracts\Http\Server\Middleware\DispatcherInterface;
+use Maduser\Argon\Middleware\Contracts\Middleware\DispatcherInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Middleware\MiddlewarePipeline;
-use Maduser\Argon\Prophecy\Support\Tag;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
@@ -24,6 +23,7 @@ use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\Store\ContainerStore;
 use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
+use Override;
 use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteServiceProvider extends AbstractServiceProvider
@@ -31,6 +31,7 @@ class RouteServiceProvider extends AbstractServiceProvider
     /**
      * @throws ContainerException
      */
+    #[Override]
     public function register(ArgonContainer $container): void
     {
         $parameters = $container->getParameters();
@@ -66,7 +67,7 @@ class RouteServiceProvider extends AbstractServiceProvider
         /**
          * Override the default dispatcher middleware
          */
-        $container->set(DispatcherInterface::class, RouteDispatcherMiddleware::class)
-            ->tag([Tag::MIDDLEWARE_HTTP => ['priority' => 6000, 'group' => ['api', 'web']]]);
+//        $container->set(DispatcherInterface::class, RouteDispatcherMiddleware::class)
+//            ->tag([Tag::MIDDLEWARE_HTTP => ['priority' => 6000, 'group' => ['api', 'web']]]);
     }
 }

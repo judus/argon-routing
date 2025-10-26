@@ -7,7 +7,9 @@ namespace Maduser\Argon\Routing\Middleware;
 use Closure;
 use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -23,6 +25,10 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
     ) {
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $route = $this->context->getRoute();

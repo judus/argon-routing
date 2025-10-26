@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing;
 
 use Maduser\Argon\Container\ArgonContainer;
+use Maduser\Argon\Container\Exceptions\ContainerException;
+use Maduser\Argon\Container\Exceptions\NotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -28,7 +30,7 @@ final readonly class RoutePipeline
         $finalHandler = new class ($controller, $final) implements RequestHandlerInterface {
             public function __construct(
                 private $controller,
-                private RequestHandlerInterface $next
+                private readonly RequestHandlerInterface $next
             ) {
             }
 
@@ -42,12 +44,15 @@ final readonly class RoutePipeline
         };
 
         return array_reduce(
-            array_reverse($middlewareClasses),
+        /**
+         * @throws ContainerException
+         * @throws NotFoundException
+         */ array_reverse($middlewareClasses),
             fn(RequestHandlerInterface $next, string $middlewareClass) =>
             new class ($this->container->get($middlewareClass), $next) implements RequestHandlerInterface {
                 public function __construct(
-                    private MiddlewareInterface $middleware,
-                    private RequestHandlerInterface $next
+                    private readonly MiddlewareInterface     $middleware,
+                    private readonly RequestHandlerInterface $next
                 ) {
                 }
 

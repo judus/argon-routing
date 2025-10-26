@@ -1,76 +1,82 @@
 {
-    "name": "maduser/argon-routing",
-    "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Maduser\\Argon\\Routing\\": "src/"
-        }
+  "name": "maduser/argon-routing",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Maduser\\Argon\\Routing\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Maduser\\Argon\\Routing\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Julien Duseyau",
+      "email": "julien.duseyau@gmail.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "path",
+      "url": "~/workspace/argon/packages/maduser-argon"
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Maduser\\Argon\\Routing\\Tests\\": "tests/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Julien Duseyau",
-            "email": "julien.duseyau@gmail.com"
-        }
+    {
+      "type": "path",
+      "url": "~/workspace/argon/packages/maduser-argon-middleware"
+    }
+  ],
+  "require": {
+    "maduser/argon": "dev-master",
+    "maduser/argon-middleware": "dev-master",
+    "psr/http-message": "^2.0",
+    "psr/http-server-handler": "^1.0",
+    "psr/http-server-middleware": "^1.0",
+    "psr/log": "^3.0"
+  },
+  "require-dev": {
+    "monolog/monolog": "^3.9",
+    "nyholm/psr7": "^1.8",
+    "symfony/var-dumper": "^7.2",
+    "vlucas/phpdotenv": "^5.6",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+    "phpunit/phpunit": "^11.5",
+    "slevomat/coding-standard": "^8.24",
+    "squizlabs/php_codesniffer": "^4.0",
+    "vimeo/psalm": "^6.13"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs --standard=phpcs.xml",
+    "phpcs:fix": "vendor/bin/phpcbf --standard=phpcs.xml",
+    "psalm": "vendor/bin/psalm --output-format=github",
+    "psalm:clear": "vendor/bin/psalm --clear-cache",
+    "test": "vendor/bin/phpunit",
+    "test:coverage": "mkdir -p storage/phpunit/coverage/html && vendor/bin/phpunit --coverage-html storage/phpunit/coverage/html --coverage-clover storage/phpunit/coverage/clover.xml && open storage/phpunit/coverage/html/index.html",
+    "ti": "vendor/bin/phpunit --testsuite=unit",
+    "tu": "vendor/bin/phpunit --testsuite=unit",
+    "watch": "find src/ | entr -r composer check",
+    "watch:test": "find src/ | entr -r composer test",
+    "watch:fix": "find src/ | entr -r composer phpcs:fix",
+    "check": [
+      "@test:coverage",
+      "@psalm",
+      "@phpcs:fix",
+      "@phpcs"
     ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "~/workspace/argon/packages/maduser-argon"
-        },
-        {
-            "type": "path",
-            "url": "~/workspace/argon/packages/maduser-argon-middleware"
-        }
-    ],
-    "require": {
-        "maduser/argon": "dev-master",
-        "maduser/argon-middleware": "dev-master",
-        "psr/http-message": "^2.0",
-        "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0",
-        "psr/log": "^3.0"
-    },
-    "require-dev": {
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "monolog/monolog": "^3.9",
-        "nyholm/psr7": "^1.8",
-        "phpunit/phpunit": "^9.6",
-        "slevomat/coding-standard": "^8.16",
-        "squizlabs/php_codesniffer": "^3.8",
-        "symfony/var-dumper": "^7.2",
-        "vimeo/psalm": "^5.26",
-        "vlucas/phpdotenv": "^5.6"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        },
-        "platform": {
-            "php": "8.2"
-        }
-    },
-    "scripts": {
-        "phpcs": "vendor/bin/phpcs --standard=phpcs.xml",
-        "phpcs:fix":"vendor/bin/phpcbf --standard=phpcs.xml",
-        "psalm": "vendor/bin/psalm --output-format=github",
-        "psalm:clear": "vendor/bin/psalm --clear-cache",
-        "test": "vendor/bin/phpunit",
-        "test:coverage": "mkdir -p storage/phpunit/coverage/html && vendor/bin/phpunit --coverage-html storage/phpunit/coverage/html --coverage-clover storage/phpunit/coverage/clover.xml && open storage/phpunit/coverage/html/index.html",
-        "ti": "vendor/bin/phpunit --testsuite=unit",
-        "tu": "vendor/bin/phpunit --testsuite=unit",
-        "watch": "find src/ | entr -r composer check",
-        "watch:test": "find src/ | entr -r composer test",
-        "watch:fix": "find src/ | entr -r composer phpcs:fix",
-        "check": ["@test:coverage", "@psalm", "@phpcs:fix", "@phpcs"],
-        "ci": ["@test", "@psalm", "@phpcs"]
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "ci": [
+      "@test",
+      "@psalm",
+      "@phpcs"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

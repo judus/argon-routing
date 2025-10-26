@@ -4,7 +4,6 @@ namespace Maduser\Argon\Routing\Store;
 
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
-use RuntimeException;
 
 /**
  * Lightweight store used primarily for tests; kept around as a placeholder

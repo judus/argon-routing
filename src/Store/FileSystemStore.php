@@ -4,17 +4,17 @@ namespace Maduser\Argon\Routing\Store;
 
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
-use RuntimeException;
 
 /**
  * Simple file-backed store reserved for potential standalone usage;
  * not required when operating inside the Argon container stack.
  */
-final class FileSystemStore implements RouteStoreInterface
+final readonly class FileSystemStore implements RouteStoreInterface
 {
     public function __construct(
-        private readonly string $filePath
-    ) {}
+        private string $filePath
+    ) {
+    }
 
     public function all(string $method): array
     {
@@ -43,6 +43,6 @@ final class FileSystemStore implements RouteStoreInterface
     private function persist(array $routes): void
     {
         $export = var_export($routes, true);
-        file_put_contents($this->filePath, "<?php return {$export};\n");
+        file_put_contents($this->filePath, "<?php return $export;\n");
     }
 }

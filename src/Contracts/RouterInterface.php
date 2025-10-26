@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Contracts;
 
 use Closure;
-use Maduser\Argon\Container\Exceptions\ContainerException;
-use ReflectionException;
 
 interface RouterInterface
 {

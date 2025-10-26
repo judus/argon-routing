@@ -12,7 +12,6 @@ use Maduser\Argon\Container\Support\ReflectionUtils;
 use Maduser\Argon\Container\Support\ServiceInvoker;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
-use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use ReflectionException;
 use RuntimeException;
 

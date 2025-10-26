@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing;
 
 use JsonSerializable;
-use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
 
 final class RouteContext implements RouteContextInterface, JsonSerializable
 {

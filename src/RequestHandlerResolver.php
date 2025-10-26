@@ -8,7 +8,6 @@ use Maduser\Argon\Middleware\Contracts\PipelineStoreInterface;
 use Maduser\Argon\Middleware\MiddlewareStack;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
-use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;

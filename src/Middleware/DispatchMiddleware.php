@@ -9,7 +9,6 @@ use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Container\Exceptions\NotFoundException;
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
-use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\RoutePipeline;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
