@@ -10,10 +10,10 @@ use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Container\ServiceDescriptor;
 use Maduser\Argon\Container\Support\ReflectionUtils;
 use Maduser\Argon\Container\Support\ServiceInvoker;
-use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
+use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use ReflectionException;
-use RuntimeException;
 
 final readonly class ContainerStore implements RouteStoreInterface
 {
@@ -54,7 +54,7 @@ final readonly class ContainerStore implements RouteStoreInterface
         } elseif (is_string($handler)) {
             $class = $handler;
         } else {
-            throw new RuntimeException('Closure handlers are not supported in container-based routes.');
+            throw RouterException::forUnsupportedClosureInContainerStore();
         }
 
         /**

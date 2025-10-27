@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Tests\Integration;
 
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\RouteDispatcherMiddleware;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\Tests\Integration\Fixtures\FrozenRouteContext;
@@ -13,6 +14,7 @@ use Maduser\Argon\Routing\Tests\Integration\Fixtures\RouteDispatcherRecordingHan
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Container\ContainerInterface;
 use RuntimeException;
 
 final class RouteDispatcherMiddlewareTest extends TestCase
@@ -87,11 +89,54 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         $psr17 = new Psr17Factory();
         $middleware = new RouteDispatcherMiddleware($container, $context, $result);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Infinite RouteDispatcherMiddleware loop detected.');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/loop'),
+            new RouteDispatcherRecordingHandler($psr17->createResponse())
+        );
+    }
+
+    public function testThrowsWhenResolvedInvokerIsNotCallable(): void
+    {
+        // Simulate a misconfigured container entry that returns a scalar instead of a callable.
+        $route = new Route(
+            method: 'GET',
+            name: 'broken',
+            pattern: '/broken',
+            handler: 'BrokenController@show',
+        );
+
+        $container = new class('/broken') implements ContainerInterface {
+            public function __construct(private readonly string $routeId)
+            {
+            }
+
+            public function get(string $id): mixed
+            {
+                if ($id === $this->routeId) {
+                    return 'not-callable';
+                }
+
+                throw new RuntimeException("Service [$id] not mocked.");
+            }
+
+            public function has(string $id): bool
+            {
+                return $id === $this->routeId;
+            }
+        };
+        $result = new RecordingResultContext();
+        $context = new FrozenRouteContext($route);
+        $psr17 = new Psr17Factory();
+        $middleware = new RouteDispatcherMiddleware($container, $context, $result);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Handler [BrokenController@show] is not callable (got: string).');
+
+        $middleware->process(
+            $psr17->createServerRequest('GET', '/broken'),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
     }

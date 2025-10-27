@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Tests\Unit;
 
-use LogicException;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Route;
 use PHPUnit\Framework\TestCase;
 
@@ -45,7 +45,7 @@ final class RouteTest extends TestCase
             handler: 'UserController@index',
         );
 
-        $this->expectException(LogicException::class);
+        $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Route has no compiled pattern');
 
         $route->getCompiled();

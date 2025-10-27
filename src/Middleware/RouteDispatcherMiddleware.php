@@ -7,6 +7,7 @@ namespace Maduser\Argon\Routing\Middleware;
 use Closure;
 use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteContextInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -14,7 +15,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use RuntimeException;
 
 final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
 {
@@ -41,14 +41,14 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
             $serviceId = (string) $handlerDef;
 
             if ($serviceId === self::class) {
-                throw new RuntimeException('Infinite RouteDispatcherMiddleware loop detected.');
+                throw RouterException::forMiddlewareRecursion('RouteDispatcherMiddleware');
             }
 
             $invoker = $this->container->get($route->getPattern());
 
             if (!is_callable($invoker)) {
                 $type = get_debug_type($invoker);
-                throw new RuntimeException("Handler [$serviceId] is not callable (got: $type).");
+                throw RouterException::forNonCallableHandler($serviceId, $type);
             }
         }
 

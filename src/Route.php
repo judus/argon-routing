@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing;
 
 use Closure;
-use LogicException;
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Psr\Http\Server\MiddlewareInterface;
 
 final class Route implements RouteInterface, MatchedRouteInterface
@@ -51,7 +51,7 @@ final class Route implements RouteInterface, MatchedRouteInterface
 
     public function getCompiled(): string
     {
-        return $this->compiled ?? throw new LogicException('Route has no compiled pattern');
+        return $this->compiled ?? throw RouterException::forMissingCompiledPattern();
     }
 
     public function getHandler(): string|array|Closure
@@ -82,7 +82,7 @@ final class Route implements RouteInterface, MatchedRouteInterface
     }
 
     /**
-     * @para array<int|string, string> $args
+     * @param array<int|string, string> $args
      */
     public function setArguments(array $args): void
     {

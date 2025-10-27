@@ -76,6 +76,68 @@ final class ArgonRouterTest extends TestCase
             ThirdMiddleware::class,
         ], $pipelines->registeredStacks[0]->toArray());
     }
+
+    public function testConvenienceMethodsRegisterRoutesWithCorrectVerbs(): void
+    {
+        $verbs = [
+            'POST' => 'post',
+            'PUT' => 'put',
+            'PATCH' => 'patch',
+            'DELETE' => 'delete',
+            'OPTIONS' => 'options',
+        ];
+
+        foreach ($verbs as $verb => $method) {
+            $container = new ArgonContainer();
+            $routes = new RouteManager();
+            $pipelines = new RecordingPipelineManager();
+            $router = new Router($container, $routes, $pipelines);
+
+            $path = '/' . strtolower($verb);
+            $handler = 'Handler@' . strtolower($method);
+
+            $router->$method($path, $handler);
+
+            $registered = $routes->getRoutesFor($verb);
+            self::assertArrayHasKey($path, $registered);
+
+            $route = $registered[$path];
+            self::assertSame($verb, $route['method']);
+            self::assertSame($handler, $route['handler']);
+            self::assertSame('pipeline__' . md5(json_encode([])), $route['pipelineId']);
+
+            self::assertCount(1, $pipelines->registeredStacks);
+            self::assertSame('pipeline__' . md5(json_encode([])), $pipelines->registeredStacks[0]->getId());
+        }
+    }
+
+    public function testGroupAcceptsCommaSeparatedAliasMetadata(): void
+    {
+        $container = new ArgonContainer();
+        $container->tag(StringAliasMiddleware::class, ['middleware.http' => ['group' => 'admin, api', 'priority' => 5]]);
+        $container->tag(ExplicitMiddleware::class, ['middleware.http' => ['group' => ['admin'], 'priority' => 10]]);
+
+        $routes = new RouteManager();
+        $pipelines = new RecordingPipelineManager();
+        $router = new Router($container, $routes, $pipelines);
+
+        $router->group(['admin'], '/secure', function (Router $router): void {
+            $router->get('/zone', DummyRequestHandler::class, [], 'secure.zone');
+        });
+
+        $registered = $routes->getRoutesFor('GET');
+        $route = $registered['/secure/zone'];
+
+        self::assertSame([
+            ExplicitMiddleware::class,
+            StringAliasMiddleware::class,
+        ], $route['middlewares']);
+
+        self::assertSame([
+            ExplicitMiddleware::class,
+            StringAliasMiddleware::class,
+        ], $pipelines->registeredStacks[0]->toArray());
+    }
 }
 
 final class RecordingPipelineManager implements PipelineManagerInterface
@@ -119,6 +181,22 @@ final class SecondMiddleware implements MiddlewareInterface
 }
 
 final class ThirdMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        return $handler->handle($request);
+    }
+}
+
+final class StringAliasMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        return $handler->handle($request);
+    }
+}
+
+final class ExplicitMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

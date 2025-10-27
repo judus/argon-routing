@@ -54,4 +54,24 @@ final class RouteContextTest extends TestCase
         self::assertSame($resolved, $frozen->getRoute());
         self::assertSame($resolved, $frozen->getRoute($factory->createServerRequest('GET', '/other')));
     }
+
+    public function testJsonSerializeExportsResolvedRoute(): void
+    {
+        $container = new ArgonContainer();
+        $routes = new RouteManager();
+        $router = new Router($container, $routes);
+        $router->get('/json/{id}', 'JsonController@show', name: 'json.show');
+
+        $factory = new Psr17Factory();
+        $matcher = new RouteMatcher($routes);
+        $request = $factory->createServerRequest('GET', '/json/7');
+        $context = new RouteContext($matcher, $request);
+
+        $context->getRoute(); // Warm the cache so jsonSerialize has data.
+
+        $payload = json_encode($context, JSON_THROW_ON_ERROR);
+
+        self::assertStringContainsString('"json.show"', $payload);
+        self::assertStringContainsString('"7"', $payload);
+    }
 }

@@ -6,10 +6,10 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\DispatchMiddleware;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\RoutePipeline;
-use Maduser\Argon\Routing\Tests\Integration\Fixtures\FrozenRouteContext;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -41,15 +41,13 @@ final class RouteDispatchTest extends TestCase
             arguments: ['id' => '123']
         );
 
-        $context = new FrozenRouteContext($route);
-
         $psr17 = new Psr17Factory();
 
         $request = $psr17->createServerRequest('GET', '/items/123')
             ->withAttribute(MatchedRouteInterface::class, $route);
 
         $finalHandler = new RecordingFinalHandler($psr17->createResponse());
-        $middleware = new DispatchMiddleware($container, $pipeline, $context);
+        $middleware = new DispatchMiddleware($container, $pipeline);
 
         $response = $middleware->process($request, $finalHandler);
 
@@ -69,6 +67,98 @@ final class RouteDispatchTest extends TestCase
         self::assertInstanceOf(ServerRequestInterface::class, $processedRequest);
         self::assertSame('result:123', $processedRequest->getAttribute('rawResult'));
         self::assertSame(['id' => '123'], $controller->calls[0]['args'] ?? []);
+    }
+
+    public function testThrowsWhenRouteAttributeMissing(): void
+    {
+        $container = new ArgonContainer();
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('GET', '/missing');
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('No resolved route found in request.');
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+    }
+
+    public function testThrowsWhenRouteHandlerIsClosure(): void
+    {
+        $container = new ArgonContainer();
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'closure',
+            pattern: '/closure',
+            handler: static fn(): string => 'nope'
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('GET', '/closure')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Closure route handlers are not yet supported.');
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+    }
+
+    public function testThrowsWhenHandlerIsNotCallable(): void
+    {
+        $container = new ArgonContainer();
+        $container->set(NonCallableHandler::class)->shared();
+
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'non-callable',
+            pattern: '/non-callable',
+            handler: NonCallableHandler::class,
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('GET', '/non-callable')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Handler [%1$s] is not callable (got: %1$s).',
+            NonCallableHandler::class
+        ));
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+    }
+
+    public function testThrowsWhenRouteHandlerReferencesMiddlewareItself(): void
+    {
+        // Guard against accidentally wiring the middleware as the controller, which would recurse forever.
+        $container = new ArgonContainer();
+        $container->set(DispatchMiddleware::class, static fn() => static fn(array $args): string => 'noop')->shared();
+
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'self-loop',
+            pattern: '/loop',
+            handler: DispatchMiddleware::class,
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('GET', '/loop')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Infinite DispatchMiddleware loop detected.');
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
     }
 }
 
@@ -152,4 +242,8 @@ final class RecordingFinalHandler implements RequestHandlerInterface
     {
         return $this->response;
     }
+}
+
+final class NonCallableHandler
+{
 }

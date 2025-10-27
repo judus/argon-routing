@@ -7,7 +7,6 @@ namespace Maduser\Argon\Routing\Tests\Unit;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\Store\InMemoryStore;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 final class InMemoryStoreTest extends TestCase
 {

@@ -7,7 +7,6 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\Store\FileSystemStore;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 final class FileSystemStoreTest extends TestCase
 {

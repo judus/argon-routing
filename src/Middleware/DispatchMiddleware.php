@@ -9,12 +9,12 @@ use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Container\Exceptions\NotFoundException;
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\RoutePipeline;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use RuntimeException;
 
 final readonly class DispatchMiddleware implements MiddlewareInterface
 {
@@ -34,14 +34,14 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
         $route = $request->getAttribute(MatchedRouteInterface::class);
 
         if (!$route instanceof MatchedRouteInterface) {
-            throw new RuntimeException('No resolved route found in request.');
+            throw RouterException::forMissingMatchedRoute();
         }
 
         $routeHandler = $route->getHandler();
 
         if ($routeHandler instanceof Closure) {
             // TODO: Future support for closure handlers
-            throw new RuntimeException('Closure route handlers are not yet supported.');
+            throw RouterException::forUnsupportedClosureRouteHandler();
         }
 
         $serviceId = (string) $routeHandler;
@@ -50,11 +50,11 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
 
         if (!is_callable($invoker)) {
             $type = get_debug_type($invoker);
-            throw new RuntimeException("Handler [$serviceId] is not callable (got: $type).");
+            throw RouterException::forNonCallableHandler($serviceId, $type);
         }
 
         if ($serviceId === DispatchMiddleware::class) {
-            throw new RuntimeException("Infinite DispatchMiddleware loop detected.");
+            throw RouterException::forMiddlewareRecursion('DispatchMiddleware');
         }
 
         $callable = fn(): mixed => $invoker($route->getArguments());
