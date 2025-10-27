@@ -58,23 +58,17 @@ final class ArgonRouterTest extends TestCase
 
         $route = $registered['/admin/dashboard'];
         self::assertSame('admin.dashboard', $route['name']);
-        self::assertSame('pipeline__' . md5(json_encode([
+        $expectedOrder = [
+            ThirdMiddleware::class,
             FirstMiddleware::class,
             SecondMiddleware::class,
-            ThirdMiddleware::class,
-        ])), $route['pipelineId']);
-        self::assertSame([
-            FirstMiddleware::class,
-            SecondMiddleware::class,
-            ThirdMiddleware::class,
-        ], $route['middlewares']);
+        ];
+
+        self::assertSame('pipeline__' . md5(json_encode($expectedOrder)), $route['pipelineId']);
+        self::assertSame($expectedOrder, $route['middlewares']);
 
         self::assertCount(1, $pipelines->registeredStacks);
-        self::assertSame([
-            FirstMiddleware::class,
-            SecondMiddleware::class,
-            ThirdMiddleware::class,
-        ], $pipelines->registeredStacks[0]->toArray());
+        self::assertSame($expectedOrder, $pipelines->registeredStacks[0]->toArray());
     }
 
     public function testConvenienceMethodsRegisterRoutesWithCorrectVerbs(): void

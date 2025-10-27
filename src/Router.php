@@ -13,6 +13,8 @@ use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 
 final class Router implements RouterInterface
 {
+    private const ROUTE_LEVEL_PRIORITY = 6100;
+
     private ?PipelineManagerInterface $pipelines;
     private array $groupMiddleware = [];
     private string $groupPrefix = '';
@@ -73,60 +75,133 @@ final class Router implements RouterInterface
 
     private function resolveMiddlewares(array $middlewares): MiddlewareStackInterface
     {
-        if (empty($middlewares)) {
+        if ($middlewares === []) {
             return new MiddlewareStack([]);
         }
 
         $meta = $this->container->getTaggedMeta('middleware.http');
+        $descriptors = $this->normaliseRouteMiddleware($middlewares, $meta);
 
-        $expanded = $this->expandGroupAliases($middlewares, $meta);
-        return $this->buildSortedStack($expanded, $meta);
+        return $this->buildSortedStack($descriptors, $meta);
     }
 
-    private function expandGroupAliases(array $input, array $meta): array
+    /**
+     * @param array<int|string, mixed> $middlewares
+     * @param array<string, array<string, mixed>> $meta
+     * @return list<array{class: string, priority: int|null, index: int}>
+     */
+    private function normaliseRouteMiddleware(array $middlewares, array $meta): array
     {
-        $expanded = [];
+        $normalized = [];
+        $position = 0;
 
-        foreach ($input as $alias) {
-            $matches = [];
-
-            foreach ($meta as $class => $attributes) {
-                $groups = [];
-
-                if (isset($attributes['group'])) {
-                    $groups = is_array($attributes['group'])
-                        ? $attributes['group']
-                        : array_map('trim', explode(',', (string) $attributes['group']));
-                }
-
-                if (in_array($alias, $groups, true)) {
-                    $matches[] = $class;
-                }
-            }
-
-            if ($matches === []) {
-                $expanded[] = $alias;
+        foreach ($middlewares as $key => $entry) {
+            if (is_string($key) && is_array($entry)) {
+                $normalized[] = [
+                    'class' => $key,
+                    'priority' => array_key_exists('priority', $entry) ? (int) $entry['priority'] : null,
+                    'index' => $position++,
+                ];
                 continue;
             }
 
-            foreach ($matches as $class) {
-                $expanded[] = $class;
+            if (is_array($entry) && isset($entry['class']) && is_string($entry['class'])) {
+                $normalized[] = [
+                    'class' => $entry['class'],
+                    'priority' => array_key_exists('priority', $entry) ? (int) $entry['priority'] : null,
+                    'index' => $position++,
+                ];
+                continue;
+            }
+
+            if (!is_string($entry)) {
+                throw new \InvalidArgumentException('Invalid middleware definition provided to router.');
+            }
+
+            $expanded = $this->expandAlias($entry, $meta);
+
+            if ($expanded === null) {
+                $normalized[] = [
+                    'class' => $entry,
+                    'priority' => null,
+                    'index' => $position++,
+                ];
+                continue;
+            }
+
+            foreach ($expanded as $class) {
+                $normalized[] = [
+                    'class' => $class,
+                    'priority' => null,
+                    'index' => $position++,
+                ];
             }
         }
 
-        return $expanded === [] ? $input : array_values(array_unique($expanded));
+        return $normalized;
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $meta
+     */
+    private function expandAlias(string $alias, array $meta): ?array
+    {
+        $matches = [];
+
+        foreach ($meta as $class => $attributes) {
+            if (!isset($attributes['group'])) {
+                continue;
+            }
+
+            $groups = is_array($attributes['group'])
+                ? $attributes['group']
+                : array_map('trim', explode(',', (string) $attributes['group']));
+
+            if (in_array($alias, $groups, true)) {
+                $matches[] = $class;
+            }
+        }
+
+        return $matches === [] ? null : $matches;
+    }
+
+    /**
+     * @param list<array{class: string, priority: int|null, index: int}|string> $middleware
+     * @param array<string, array<string, mixed>> $meta
+     */
     private function buildSortedStack(array $middleware, array $meta): MiddlewareStack
     {
         $withPriority = [];
 
-        foreach ($middleware as $class) {
-            $priority = $meta[$class]['priority'] ?? 0;
-            $withPriority[] = ['class' => $class, 'priority' => (int) $priority];
+        foreach ($middleware as $descriptor) {
+            if (is_string($descriptor)) {
+                $class = $descriptor;
+                $priorityOverride = null;
+                $index = count($withPriority);
+            } else {
+                $class = $descriptor['class'];
+                $priorityOverride = $descriptor['priority'];
+                $index = $descriptor['index'];
+            }
+
+            $priority = $priorityOverride
+                ?? ($meta[$class]['priority'] ?? null)
+                ?? self::ROUTE_LEVEL_PRIORITY;
+
+            $withPriority[] = [
+                'class' => $class,
+                'priority' => (int) $priority,
+                'index' => $index,
+            ];
         }
 
-        usort($withPriority, fn ($a, $b) => $b['priority'] <=> $a['priority']);
+        usort(
+            $withPriority,
+            static function (array $a, array $b): int {
+                $cmp = $b['priority'] <=> $a['priority'];
+                return $cmp !== 0 ? $cmp : $a['index'] <=> $b['index'];
+            }
+        );
 
         return new MiddlewareStack(array_column($withPriority, 'class'));
     }
