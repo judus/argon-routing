@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Exception;
 
 use RuntimeException;
+use function json_encode;
 
 final class RouterException extends RuntimeException
 {
@@ -28,14 +29,28 @@ final class RouterException extends RuntimeException
         return new self('Closure handlers are not supported in container-based routes.');
     }
 
-    public static function forNonCallableHandler(string $serviceId, string $type): self
+    public static function forNonCallableHandler(string $serviceId, string $type, ?string $method = null): self
     {
-        return new self("Handler [$serviceId] is not callable (got: $type).");
+        $label = $method !== null ? $serviceId . '::' . $method : $serviceId;
+
+        return new self("Handler [$label] is not callable (got: $type).");
     }
 
     public static function forMiddlewareRecursion(string $middlewareName): self
     {
         return new self("Infinite $middlewareName loop detected.");
     }
-}
 
+    /**
+     * @param array<array-key, mixed> $handler
+     */
+    public static function forMalformedHandlerDefinition(array $handler): self
+    {
+        return new self(
+            sprintf(
+                'Malformed handler definition [%s]; expected [class-string, method-name].',
+                json_encode($handler, JSON_THROW_ON_ERROR)
+            )
+        );
+    }
+}

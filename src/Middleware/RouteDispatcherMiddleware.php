@@ -34,11 +34,22 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
         $route = $this->context->getRoute();
 
         $handlerDef = $route->getHandler();
+        $serviceId = null;
+        $method = null;
 
         if ($handlerDef instanceof Closure) {
             $invoker = $handlerDef;
         } else {
-            $serviceId = (string) $handlerDef;
+            if (is_array($handlerDef)) {
+                if (!isset($handlerDef[0]) || !is_string($handlerDef[0])) {
+                    throw RouterException::forMalformedHandlerDefinition($handlerDef);
+                }
+
+                $serviceId = $handlerDef[0];
+                $method = isset($handlerDef[1]) ? (string) $handlerDef[1] : null;
+            } else {
+                $serviceId = (string) $handlerDef;
+            }
 
             if ($serviceId === self::class) {
                 throw RouterException::forMiddlewareRecursion('RouteDispatcherMiddleware');
@@ -48,7 +59,7 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
 
             if (!is_callable($invoker)) {
                 $type = get_debug_type($invoker);
-                throw RouterException::forNonCallableHandler($serviceId, $type);
+                throw RouterException::forNonCallableHandler($serviceId ?? $route->getPattern(), $type, $method);
             }
         }
 

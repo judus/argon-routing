@@ -160,6 +160,129 @@ final class RouteDispatchTest extends TestCase
 
         $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
     }
+
+    public function testDispatchesRouteWithArrayHandler(): void
+    {
+        $trace = new CallTrace();
+
+        $container = new ArgonContainer();
+        $container->set(RecordingMiddlewareA::class, fn() => new RecordingMiddlewareA($trace))->shared();
+        $container->set(RecordingMiddlewareB::class, fn() => new RecordingMiddlewareB($trace))->shared();
+        $container->set(MethodBasedController::class, fn() => new MethodBasedController($trace))->shared();
+
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'PATCH',
+            name: 'items.update',
+            pattern: '/items/{id}',
+            handler: [MethodBasedController::class, 'show'],
+            compiled: '#^/items/(?P<id>[^/]+)/?$#',
+            middlewares: [RecordingMiddlewareA::class, RecordingMiddlewareB::class],
+            arguments: ['id' => '321']
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('PATCH', '/items/321')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $finalHandler = new RecordingFinalHandler($psr17->createResponse());
+
+        $response = $middleware->process($request, $finalHandler);
+
+        self::assertSame($finalHandler->getResponse(), $response);
+        self::assertSame(
+            [
+                'A:before',
+                'B:before',
+                'method.show',
+                'B:after',
+                'A:after',
+            ],
+            $trace->events
+        );
+
+        $processedRequest = $finalHandler->handledRequest;
+        self::assertSame('method:321', $processedRequest?->getAttribute('rawResult'));
+    }
+
+    public function testDispatchThrowsOnMalformedHandlerDefinition(): void
+    {
+        $container = new ArgonContainer();
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'POST',
+            name: 'broken.handler',
+            pattern: '/broken',
+            handler: [],
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('POST', '/broken')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Malformed handler definition');
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+    }
+
+    public function testDispatchesInvokeHandlerDefinedAsArray(): void
+    {
+        $container = new ArgonContainer();
+        $container->set(InvokeArrayController::class, fn() => new InvokeArrayController())->shared();
+
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'invoke.array',
+            pattern: '/invoke/{slug}',
+            handler: [InvokeArrayController::class, '__invoke'],
+            compiled: '#^/invoke/(?P<slug>[^/]+)$#',
+            arguments: ['slug' => 'sample']
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('GET', '/invoke/sample')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $response = $middleware->process(
+            $request,
+            new RecordingFinalHandler($psr17->createResponse())
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+    }
+
+    public function testThrowsWhenArrayHandlerMethodIsMissing(): void
+    {
+        $container = new ArgonContainer();
+        $container->set(MethodMissingController::class, fn() => new MethodMissingController())->shared();
+
+        $pipeline = new RoutePipeline($container);
+        $middleware = new DispatchMiddleware($container, $pipeline);
+
+        $route = new Route(
+            method: 'DELETE',
+            name: 'missing.method',
+            pattern: '/missing',
+            handler: [MethodMissingController::class, 'missing'],
+        );
+
+        $psr17 = new Psr17Factory();
+        $request = $psr17->createServerRequest('DELETE', '/missing')
+            ->withAttribute(MatchedRouteInterface::class, $route);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Handler [' . MethodMissingController::class . '::missing] is not callable');
+
+        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+    }
 }
 
 final class CallTrace
@@ -245,5 +368,31 @@ final class RecordingFinalHandler implements RequestHandlerInterface
 }
 
 final class NonCallableHandler
+{
+}
+
+final class MethodBasedController
+{
+    public function __construct(
+        private readonly CallTrace $trace
+    ) {
+    }
+
+    public function show(string $id): string
+    {
+        $this->trace->add('method.show');
+        return 'method:' . $id;
+    }
+}
+
+final class InvokeArrayController
+{
+    public function __invoke(array $payload): string
+    {
+        return 'invoke:' . ($payload['slug'] ?? 'missing');
+    }
+}
+
+final class MethodMissingController
 {
 }

@@ -105,7 +105,7 @@ final class RouteDispatcherMiddlewareTest extends TestCase
             method: 'GET',
             name: 'broken',
             pattern: '/broken',
-            handler: 'BrokenController@show',
+            handler: [BrokenController::class, 'show'],
         );
 
         $container = new class('/broken') implements ContainerInterface {
@@ -133,11 +133,66 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         $middleware = new RouteDispatcherMiddleware($container, $context, $result);
 
         $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('Handler [BrokenController@show] is not callable (got: string).');
+        $this->expectExceptionMessage('Handler [' . BrokenController::class . '::show] is not callable (got: string).');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/broken'),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
+    }
+
+    public function testThrowsOnMalformedHandlerDefinition(): void
+    {
+        $route = new Route(
+            method: 'GET',
+            name: 'malformed',
+            pattern: '/malformed',
+            handler: [null],
+        );
+
+        $container = new RecordingContainer([]);
+        $result = new RecordingResultContext();
+        $context = new FrozenRouteContext($route);
+        $psr17 = new Psr17Factory();
+        $middleware = new RouteDispatcherMiddleware($container, $context, $result);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Malformed handler definition');
+
+        $middleware->process(
+            $psr17->createServerRequest('GET', '/malformed'),
+            new RouteDispatcherRecordingHandler($psr17->createResponse())
+        );
+    }
+
+    public function testArrayHandlerRecursionDetection(): void
+    {
+        $route = new Route(
+            method: 'GET',
+            name: 'loop',
+            pattern: '/loop',
+            handler: [RouteDispatcherMiddleware::class, 'process'],
+        );
+
+        $container = new RecordingContainer([]);
+        $result = new RecordingResultContext();
+        $context = new FrozenRouteContext($route);
+        $psr17 = new Psr17Factory();
+        $middleware = new RouteDispatcherMiddleware($container, $context, $result);
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Infinite RouteDispatcherMiddleware loop detected.');
+
+        $middleware->process(
+            $psr17->createServerRequest('GET', '/loop'),
+            new RouteDispatcherRecordingHandler($psr17->createResponse())
+        );
+    }
+}
+
+final class BrokenController
+{
+    public function __construct()
+    {
     }
 }

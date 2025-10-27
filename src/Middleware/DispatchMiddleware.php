@@ -43,12 +43,26 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
             // TODO: Future support for closure handlers
             throw RouterException::forUnsupportedClosureRouteHandler();
         }
+        $method = null;
+        if (is_array($routeHandler)) {
+            if (!isset($routeHandler[0]) || !is_string($routeHandler[0])) {
+                throw RouterException::forMalformedHandlerDefinition($routeHandler);
+            }
 
-        $serviceId = (string) $routeHandler;
+            $serviceId = $routeHandler[0];
+            $method    = isset($routeHandler[1]) ? (string) $routeHandler[1] : null;
+        } else {
+            $serviceId = (string) $routeHandler;
+        }
 
         $invoker = $this->container->get($serviceId);
 
-        if (!is_callable($invoker)) {
+        if ($method !== null) {
+            if (!is_callable([$invoker, $method])) {
+                $type = get_debug_type($invoker);
+                throw RouterException::forNonCallableHandler($serviceId, $type, $method);
+            }
+        } elseif (!is_callable($invoker)) {
             $type = get_debug_type($invoker);
             throw RouterException::forNonCallableHandler($serviceId, $type);
         }
@@ -57,7 +71,11 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
             throw RouterException::forMiddlewareRecursion('DispatchMiddleware');
         }
 
-        $callable = fn(): mixed => $invoker($route->getArguments());
+        $arguments = $route->getArguments();
+
+        $callable = $method !== null && $method !== '__invoke'
+            ? fn(): mixed => $invoker->{$method}(...$arguments)
+            : fn(): mixed => $invoker($arguments);
 
         return $this->pipeline->handle(
             $route->getMiddlewares(),

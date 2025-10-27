@@ -4,7 +4,7 @@
          failOnWarning="true"
          failOnRisky="true"
          cacheResult="true"
-         cacheDirectory=".phpunit.cache">
+         cacheDirectory=".phpunit/cache">
 
     <testsuites>
         <testsuite name="integration">
@@ -23,8 +23,8 @@
 
     <coverage includeUncoveredFiles="true">
         <report>
-            <clover outputFile="build/logs/clover.xml"/>
-            <html outputDirectory="build/coverage/html"/>
+            <clover outputFile=".phpunit/coverage/clover.xml"/>
+            <html outputDirectory=".phpunit/coverage/html"/>
             <text outputFile="php://stdout"/>
         </report>
     </coverage>
