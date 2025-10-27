@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Tests\Integration;
 
+use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Middleware\RouteMatcherMiddleware;
 use Maduser\Argon\Routing\Route;
@@ -47,10 +48,12 @@ final class RouteMatcherMiddlewareTest extends TestCase
         $request = $psr17->createServerRequest('GET', '/users/42');
         $handler = new class implements RequestHandlerInterface {
             public bool $handled = false;
+            public ?ServerRequestInterface $request = null;
 
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $this->handled = true;
+                $this->request = $request;
                 return (new Psr17Factory())->createResponse(200);
             }
         };
@@ -58,6 +61,7 @@ final class RouteMatcherMiddlewareTest extends TestCase
         $response = $middleware->process($request, $handler);
 
         self::assertTrue($handler->handled);
+        self::assertInstanceOf(RouteInterface::class, $handler->request->getAttribute(RouteInterface::class));
         self::assertSame(200, $response->getStatusCode());
         self::assertTrue($testHandler->hasInfoThatContains('Route matched'));
     }

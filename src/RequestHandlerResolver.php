@@ -22,17 +22,12 @@ final readonly class RequestHandlerResolver implements RequestHandlerResolverInt
     ) {
     }
 
-    public function resolve(?ServerRequestInterface $request = null): RequestHandlerInterface
+    public function resolve(ServerRequestInterface $request): RequestHandlerInterface
     {
-        if ($request === null) {
-            throw new \InvalidArgumentException('Routing requires a ServerRequestInterface instance.');
-        }
-
         $route = $request->getAttribute(RouteInterface::class);
 
         if (!$route instanceof RouteInterface) {
             $route = $this->matcher->match($request);
-            $request = $request->withAttribute(RouteInterface::class, $route);
         }
 
         $this->logger->info('Matched route', [
@@ -49,6 +44,6 @@ final readonly class RequestHandlerResolver implements RequestHandlerResolverInt
             'pipeline' => $route->getPipelineId() ?? (new MiddlewareStack($route->getMiddlewares()))->toArray(),
         ]);
 
-        return $pipeline;
+        return new RoutedRequestHandler($pipeline, $route);
     }
 }

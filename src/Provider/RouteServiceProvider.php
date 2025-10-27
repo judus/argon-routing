@@ -14,6 +14,7 @@ use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
+use Maduser\Argon\Routing\Middleware\RouteMatcherMiddleware;
 use Maduser\Argon\Routing\RequestHandlerResolver;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;

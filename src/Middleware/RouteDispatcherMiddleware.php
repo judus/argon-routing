@@ -33,6 +33,7 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
         $route = $request->getAttribute(RouteInterface::class);
 
         if (!$route instanceof RouteInterface) {
+            dump($request, $route);
             throw RouterException::forMissingMatchedRoute();
         }
 

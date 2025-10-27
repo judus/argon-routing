@@ -13,6 +13,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -38,14 +39,19 @@ final class RequestHandlerResolverTest extends TestCase
         $resolver = new RequestHandlerResolver(new MatchingRouteMatcher($route), $store, $logger);
 
         $psr17 = new Psr17Factory();
-        $request = $psr17->createServerRequest('GET', '/items/1')
-            ->withAttribute(RouteInterface::class, $route);
+        $request = $psr17->createServerRequest('GET', '/items/1');
         $result = $resolver->resolve($request);
 
-        self::assertSame($pipeline, $result);
+        self::assertNotSame($pipeline, $result);
         self::assertSame(['pipeline__abc'], $store->requested);
         self::assertTrue($testHandler->hasInfoThatContains('Matched route'));
         self::assertTrue($testHandler->hasInfoThatContains('RequestHandler resolved'));
+
+        $response = $result->handle($request);
+
+        self::assertTrue($pipeline->handled);
+        self::assertSame($route, $pipeline->request?->getAttribute(RouteInterface::class));
+        self::assertSame(200, $response->getStatusCode());
     }
 
     public function testResolvesHandlerWithMiddlewareStackWhenNoPipelineId(): void
@@ -67,15 +73,20 @@ final class RequestHandlerResolverTest extends TestCase
         $logger->pushHandler($testHandler);
 
         $resolver = new RequestHandlerResolver(new MatchingRouteMatcher($route), $store, $logger);
-        $request = (new Psr17Factory())->createServerRequest('GET', '/items')
-            ->withAttribute(RouteInterface::class, $route);
+        $request = (new Psr17Factory())->createServerRequest('GET', '/items');
         $result = $resolver->resolve($request);
 
-        self::assertSame($pipeline, $result);
+        self::assertNotSame($pipeline, $result);
         self::assertTrue($testHandler->hasInfoThatContains('Matched route'));
         self::assertTrue($testHandler->hasInfoThatContains('RequestHandler resolved'));
         self::assertInstanceOf(MiddlewarePipelineStack::class, $store->requested[0]);
         self::assertSame(['auth', 'throttle'], $store->requested[0]->toArray());
+
+        $response = $result->handle($request);
+
+        self::assertTrue($pipeline->handled);
+        self::assertSame($route, $pipeline->request?->getAttribute(RouteInterface::class));
+        self::assertSame(200, $response->getStatusCode());
     }
 }
 
@@ -119,10 +130,16 @@ final class RecordingPipelineStore implements PipelineStoreInterface
 
 final class RecordingHandler implements RequestHandlerInterface
 {
-    public function handle(ServerRequestInterface $request): \Psr\Http\Message\ResponseInterface
+    public bool $handled = false;
+    public ?ServerRequestInterface $request = null;
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $psr17 = new Psr17Factory();
-        return $psr17->createResponse();
+        $this->handled = true;
+        $this->request = $request;
+
+        return $psr17->createResponse(200);
     }
 }
 

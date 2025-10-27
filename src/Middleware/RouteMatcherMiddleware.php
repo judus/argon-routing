@@ -22,16 +22,20 @@ final readonly class RouteMatcherMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $route = $this->matcher->match($request);
+        $route = $request->getAttribute(RouteInterface::class);
 
-        $this->logger->info('Route matched', [
-            'handler' => $route->getHandler(),
-            'middlewares' => $route->getMiddlewares(),
-            'arguments' => $route->getArguments(),
-        ]);
+        if (!$route instanceof RouteInterface) {
+            $route = $this->matcher->match($request);
 
-        return $handler->handle(
-            $request->withAttribute(RouteInterface::class, $route)
-        );
+            $this->logger->info('Route matched', [
+                'handler' => $route->getHandler(),
+                'middlewares' => $route->getMiddlewares(),
+                'arguments' => $route->getArguments(),
+            ]);
+
+            $request = $request->withAttribute(RouteInterface::class, $route);
+        }
+
+        return $handler->handle($request);
     }
 }

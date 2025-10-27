@@ -7,5 +7,5 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 interface RequestHandlerResolverInterface
 {
-    public function resolve(?ServerRequestInterface $request = null): RequestHandlerInterface;
+    public function resolve(ServerRequestInterface $request): RequestHandlerInterface;
 }
