@@ -10,13 +10,11 @@ use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Middleware\MiddlewarePipeline;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
-use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
 use Maduser\Argon\Routing\RequestHandlerResolver;
-use Maduser\Argon\Routing\RouteContext;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\Router;
@@ -42,8 +40,6 @@ class RouteServiceProvider extends AbstractServiceProvider
         ]);
 
         $container->set(RouteMatcherInterface::class, RouteMatcher::class);
-
-        $container->set(RouteContextInterface::class, RouteContext::class);
 
         $container->set(RequestHandlerResolverInterface::class, RequestHandlerResolver::class);
 

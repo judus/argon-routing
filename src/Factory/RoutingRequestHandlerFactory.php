@@ -30,10 +30,6 @@ final readonly class RoutingRequestHandlerFactory
             {
                 $handler = $this->resolver->resolve($request);
 
-                if (method_exists($handler, 'setRequest')) {
-                    $handler->setRequest($request);
-                }
-
                 return $handler->handle($request);
             }
         };

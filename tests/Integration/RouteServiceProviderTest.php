@@ -7,14 +7,12 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Contracts\ServiceDescriptorInterface;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
-use Maduser\Argon\Routing\Contracts\RouteContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
 use Maduser\Argon\Routing\Provider\RouteServiceProvider;
 use Maduser\Argon\Routing\RequestHandlerResolver;
-use Maduser\Argon\Routing\RouteContext;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
 use Maduser\Argon\Routing\Router;
@@ -47,9 +45,6 @@ final class RouteServiceProviderTest extends TestCase
 
         $resolverBinding = $this->getDescriptor($container, RequestHandlerResolverInterface::class);
         self::assertSame(RequestHandlerResolver::class, $resolverBinding->getConcrete());
-
-        $contextBinding = $this->getDescriptor($container, RouteContextInterface::class);
-        self::assertSame(RouteContext::class, $contextBinding->getConcrete());
 
         $matcherBinding = $this->getDescriptor($container, RouteMatcherInterface::class);
         self::assertSame(RouteMatcher::class, $matcherBinding->getConcrete());
@@ -112,4 +107,3 @@ final class NullPipelineManager implements PipelineManagerInterface
         throw new \BadMethodCallException('Not required in tests.');
     }
 }
-

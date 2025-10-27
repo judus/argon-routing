@@ -10,6 +10,10 @@ use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @deprecated Left in place for legacy consumers that still request a
+ *             `RouteContextInterface` from the container.
+ */
 final class RouteContext implements RouteContextInterface, JsonSerializable
 {
     private ?RouteInterface $route;

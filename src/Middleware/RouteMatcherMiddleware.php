@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Middleware;
 
+use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -29,6 +30,8 @@ final readonly class RouteMatcherMiddleware implements MiddlewareInterface
             'arguments' => $route->getArguments(),
         ]);
 
-        return $handler->handle($request);
+        return $handler->handle(
+            $request->withAttribute(RouteInterface::class, $route)
+        );
     }
 }

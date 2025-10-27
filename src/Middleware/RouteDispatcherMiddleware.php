@@ -6,7 +6,8 @@ namespace Maduser\Argon\Routing\Middleware;
 
 use Closure;
 use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
-use Maduser\Argon\Routing\Contracts\RouteContextInterface;
+use Maduser\Argon\Middleware\ResultContext;
+use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Exception\RouterException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -20,8 +21,6 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private ContainerInterface $container,
-        private RouteContextInterface $context,
-        private ResultContextInterface $result,
     ) {
     }
 
@@ -31,7 +30,11 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $route = $this->context->getRoute();
+        $route = $request->getAttribute(RouteInterface::class);
+
+        if (!$route instanceof RouteInterface) {
+            throw RouterException::forMissingMatchedRoute();
+        }
 
         $handlerDef = $route->getHandler();
         $serviceId = null;
@@ -67,8 +70,15 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
 
         $result = $invoker($args);
 
-        $this->result->set($result);
+        $context = $request->getAttribute(ResultContextInterface::class);
+        if (!$context instanceof ResultContextInterface) {
+            $context = new ResultContext();
+        }
 
-        return $handler->handle($request);
+        $context->set($result);
+
+        return $handler->handle(
+            $request->withAttribute(ResultContextInterface::class, $context)
+        );
     }
 }

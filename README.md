@@ -71,7 +71,7 @@ of loading any richer objects you expect in your controllers.
 
 ```php
 // Register the interceptors that should run before your handlers are invoked.
-// Each can look at the current RouteContext, request payload, headers, etc.
+// Each can examine the matched route from the request attribute, inspect payloads, etc.
 $container->registerInterceptor(EntityBindingInterceptor::class);
 $container->registerInterceptor(JsonPayloadInterceptor::class);
 $container->registerInterceptor(RequestValidationInterceptor::class);

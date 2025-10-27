@@ -21,17 +21,11 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
         $response = $psr17->createResponse(201);
 
         $resolvedHandler = new class($response) implements RequestHandlerInterface {
-            public ?ServerRequestInterface $requestSet = null;
             public ?ServerRequestInterface $handledRequest = null;
 
             public function __construct(
                 private readonly ResponseInterface $response,
             ) {
-            }
-
-            public function setRequest(ServerRequestInterface $request): void
-            {
-                $this->requestSet = $request;
             }
 
             public function handle(ServerRequestInterface $request): ResponseInterface
@@ -62,7 +56,6 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
         $result = $handler->handle($request);
 
         self::assertSame($response, $result);
-        self::assertSame($request, $resolvedHandler->requestSet);
         self::assertSame($request, $resolvedHandler->handledRequest);
         self::assertSame($request, $resolver->resolvedWith);
     }
@@ -113,4 +106,3 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
         self::assertSame($request, $resolver->resolvedWith);
     }
 }
-

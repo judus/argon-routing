@@ -6,9 +6,9 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Middleware\Contracts\PipelineStoreInterface;
 use Maduser\Argon\Middleware\MiddlewareStack as MiddlewarePipelineStack;
+use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\RequestHandlerResolver;
 use Maduser\Argon\Routing\Route;
-use Maduser\Argon\Routing\Tests\Integration\Fixtures\FrozenRouteContext;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -35,10 +35,12 @@ final class RequestHandlerResolverTest extends TestCase
         $testHandler = new TestHandler();
         $logger = new Logger('tests');
         $logger->pushHandler($testHandler);
-        $resolver = new RequestHandlerResolver(new FrozenRouteContext($route), $store, $logger);
+        $resolver = new RequestHandlerResolver(new MatchingRouteMatcher($route), $store, $logger);
 
         $psr17 = new Psr17Factory();
-        $result = $resolver->resolve($psr17->createServerRequest('GET', '/items/1'));
+        $request = $psr17->createServerRequest('GET', '/items/1')
+            ->withAttribute(RouteInterface::class, $route);
+        $result = $resolver->resolve($request);
 
         self::assertSame($pipeline, $result);
         self::assertSame(['pipeline__abc'], $store->requested);
@@ -64,8 +66,10 @@ final class RequestHandlerResolverTest extends TestCase
         $logger = new Logger('tests');
         $logger->pushHandler($testHandler);
 
-        $resolver = new RequestHandlerResolver(new FrozenRouteContext($route), $store, $logger);
-        $result = $resolver->resolve();
+        $resolver = new RequestHandlerResolver(new MatchingRouteMatcher($route), $store, $logger);
+        $request = (new Psr17Factory())->createServerRequest('GET', '/items')
+            ->withAttribute(RouteInterface::class, $route);
+        $result = $resolver->resolve($request);
 
         self::assertSame($pipeline, $result);
         self::assertTrue($testHandler->hasInfoThatContains('Matched route'));
@@ -119,5 +123,17 @@ final class RecordingHandler implements RequestHandlerInterface
     {
         $psr17 = new Psr17Factory();
         return $psr17->createResponse();
+    }
+}
+
+final class MatchingRouteMatcher implements \Maduser\Argon\Routing\Contracts\RouteMatcherInterface
+{
+    public function __construct(private Route $route)
+    {
+    }
+
+    public function match(ServerRequestInterface $request): Route
+    {
+        return $this->route;
     }
 }
