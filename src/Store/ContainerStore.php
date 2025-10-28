@@ -12,6 +12,7 @@ use Maduser\Argon\Container\Support\ReflectionUtils;
 use Maduser\Argon\Container\Support\ServiceInvoker;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
+use Maduser\Argon\Routing\Exception\RouteHandlerException;
 use Maduser\Argon\Routing\Exception\RouterException;
 use ReflectionException;
 
@@ -61,7 +62,16 @@ final readonly class ContainerStore implements RouteStoreInterface
          * @var class-string $class
          * @var string $methodName
          */
-        $args = ReflectionUtils::getMethodParameters($class, $methodName);
+        try {
+            $args = ReflectionUtils::getMethodParameters($class, $methodName);
+        } catch (ReflectionException|ContainerException $e) {
+            throw RouteHandlerException::forPreparationFailure(
+                $route->getPattern(),
+                $class,
+                $methodName,
+                $e
+            );
+        }
 
         $descriptor = $this->container->has($class)
             ? $this->container->getDescriptor($class)
@@ -71,7 +81,16 @@ final readonly class ContainerStore implements RouteStoreInterface
          * If the container has $class, it also has the descriptor
          * @var ServiceDescriptor $descriptor
          */
-        $descriptor->defineInvocation($methodName, $args);
+        try {
+            $descriptor->defineInvocation($methodName, $args);
+        } catch (ContainerException $e) {
+            throw RouteHandlerException::forPreparationFailure(
+                $route->getPattern(),
+                $class,
+                $methodName,
+                $e
+            );
+        }
 
         $routeKey = $route->getPattern();
         $routeTag = 'route.' . strtoupper($route->getMethod());

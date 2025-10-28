@@ -6,6 +6,7 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
+use Maduser\Argon\Routing\Exception\RouteHandlerException;
 use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\Store\ContainerStore;
@@ -103,6 +104,24 @@ final class ContainerStoreTest extends TestCase
         $invocation = $descriptor->getInvocation('handle');
         self::assertArrayHasKey('id', $invocation);
         self::assertNull($invocation['id']);
+    }
+
+    public function testAddThrowsRouteHandlerExceptionWhenMethodMissing(): void
+    {
+        $container = new ArgonContainer();
+        $store = new ContainerStore($container);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'broken',
+            pattern: '/broken',
+            handler: [TestContainerStoreController::class, 'doesNotExist'],
+        );
+
+        $this->expectException(RouteHandlerException::class);
+        $this->expectExceptionMessage('Unable to prepare handler [Maduser\Argon\Routing\Tests\Integration\TestContainerStoreController::doesNotExist] for route [/broken]');
+
+        $store->add($route);
     }
 }
 
