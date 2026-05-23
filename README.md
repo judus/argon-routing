@@ -97,6 +97,13 @@ Do not expect a single `array $args` parameter in container-backed handlers. The
 container prepares controller invocations through reflection, so route arguments
 are mapped by name.
 
+## Not Found Contract
+
+When no route matches the incoming request, `RouteMatcher` throws
+`Maduser\Argon\Routing\Exception\RouteNotFoundException`. The exception carries
+code `404`, which lets Argon runtime error handlers render the failure as an HTTP
+not-found response instead of an internal-server-error.
+
 ## Model / DTO Bindings via Interceptors
 
 Frameworks such as Laravel or Symfony implement “route model binding” inside the
