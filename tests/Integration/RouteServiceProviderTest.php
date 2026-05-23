@@ -11,6 +11,7 @@ use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Factory\RoutingRequestHandlerFactory;
+use Maduser\Argon\Routing\Middleware\RouteDispatcherMiddleware;
 use Maduser\Argon\Routing\Provider\RouteServiceProvider;
 use Maduser\Argon\Routing\RequestHandlerResolver;
 use Maduser\Argon\Routing\RouteManager;
@@ -57,6 +58,14 @@ final class RouteServiceProviderTest extends TestCase
         self::assertTrue($requestHandler->hasFactory());
         self::assertSame(RoutingRequestHandlerFactory::class, $requestHandler->getFactoryClass());
         self::assertSame('create', $requestHandler->getFactoryMethod());
+
+        $dispatcher = $this->getDescriptor($container, RouteDispatcherMiddleware::class);
+        self::assertSame(RouteDispatcherMiddleware::class, $dispatcher->getConcrete());
+
+        $meta = $container->getTaggedMeta('middleware.http');
+        self::assertArrayHasKey(RouteDispatcherMiddleware::class, $meta);
+        self::assertSame(['api', 'web'], $meta[RouteDispatcherMiddleware::class]['group']);
+        self::assertSame(6000, $meta[RouteDispatcherMiddleware::class]['priority']);
     }
 
     public function testRespectsConfiguredRouteStore(): void

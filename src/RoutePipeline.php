@@ -22,7 +22,7 @@ final readonly class RoutePipeline
     }
 
     /**
-     * @param list<class-string> $middleware
+     * @param list<class-string<MiddlewareInterface>> $middleware
      */
     public function handle(
         array $middleware,
@@ -35,7 +35,7 @@ final readonly class RoutePipeline
     }
 
     /**
-     * @param list<class-string> $middlewareClasses
+     * @param list<class-string<MiddlewareInterface>> $middlewareClasses
      */
     private function buildMiddlewareStack(
         array $middlewareClasses,

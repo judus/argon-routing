@@ -27,6 +27,10 @@
     {
       "type": "path",
       "url": "~/workspace/argon/packages/maduser-argon-middleware"
+    },
+    {
+      "type": "path",
+      "url": "~/workspace/argon/packages/maduser-argon-support"
     }
   ],
   "require": {

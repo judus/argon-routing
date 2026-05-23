@@ -11,6 +11,7 @@ use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;
+use Psr\Http\Server\MiddlewareInterface;
 
 final class Router implements RouterInterface
 {
@@ -99,7 +100,7 @@ final class Router implements RouterInterface
     /**
      * @param array<int|string, mixed> $middlewares
      * @param array<string, array<string, mixed>> $meta
-     * @return list<array{class: class-string, priority: int|null, index: int}>
+     * @return list<array{class: class-string<MiddlewareInterface>, priority: int|null, index: int}>
      */
     private function normaliseRouteMiddleware(array $middlewares, array $meta): array
     {
@@ -154,7 +155,7 @@ final class Router implements RouterInterface
 
     /**
      * @param array<string, array<string, mixed>> $meta
-     * @return list<class-string>|null
+     * @return list<class-string<MiddlewareInterface>>|null
      */
     private function expandAlias(string $alias, array $meta): ?array
     {
@@ -178,12 +179,16 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @return class-string
+     * @return class-string<MiddlewareInterface>
      */
     private function middlewareServiceId(string $class): string
     {
         if (!class_exists($class) && !interface_exists($class)) {
             throw RouterException::forUnknownMiddlewareServiceId($class);
+        }
+
+        if (!is_a($class, MiddlewareInterface::class, true)) {
+            throw RouterException::forInvalidMiddlewareService($class, $class);
         }
 
         return $class;
@@ -198,7 +203,7 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @param list<array{class: class-string, priority: int|null, index: int}> $middleware
+     * @param list<array{class: class-string<MiddlewareInterface>, priority: int|null, index: int}> $middleware
      * @param array<string, array<string, mixed>> $meta
      */
     private function buildSortedStack(array $middleware, array $meta): MiddlewareStack

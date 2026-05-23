@@ -7,7 +7,6 @@ namespace Maduser\Argon\Routing\Provider;
 use Maduser\Argon\Container\AbstractServiceProvider;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
-use Maduser\Argon\Middleware\Contracts\Middleware\DispatcherInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Middleware\MiddlewarePipeline;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
@@ -60,7 +59,7 @@ final class RouteServiceProvider extends AbstractServiceProvider
         /**
          * Override the default dispatcher middleware
          */
-        $container->set(DispatcherInterface::class, RouteDispatcherMiddleware::class)
+        $container->set(RouteDispatcherMiddleware::class)
             ->tag([self::MIDDLEWARE_HTTP_TAG => ['priority' => 6000, 'group' => ['api', 'web']]]);
     }
 }

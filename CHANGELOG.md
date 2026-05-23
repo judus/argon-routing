@@ -12,3 +12,5 @@
 - Added stack integration coverage for container-backed routing and argon-middleware responders.
 - Documented the middleware service-id cache contract and made invalid middleware definitions fail with routing exceptions.
 - Documented the container-backed handler argument contract and covered array/string method handlers in stack tests.
+- Registered `RouteDispatcherMiddleware` under its concrete service id so compiled containers do not type it as the generic middleware dispatcher contract.
+- Tightened route middleware identifiers to PSR middleware class/interface strings before storing pipeline metadata.

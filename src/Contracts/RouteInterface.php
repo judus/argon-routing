@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Contracts;
 
 use Closure;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @psalm-type RouteHandler = string|array<array-key, mixed>|Closure
@@ -15,7 +16,7 @@ use Closure;
  *     compiled: ?string,
  *     handler: string,
  *     pipelineId: ?string,
- *     middlewares: list<class-string>,
+ *     middlewares: list<class-string<MiddlewareInterface>>,
  *     arguments: array<int|string, string>
  * }
  */
@@ -37,13 +38,13 @@ interface RouteInterface
     public function getPipelineId(): ?string;
 
     /**
-     * @param list<class-string> $middlewares
+     * @param list<class-string<MiddlewareInterface>> $middlewares
      * @return void
      */
     public function setMiddlewares(array $middlewares): void;
 
     /**
-     * @return list<class-string>
+     * @return list<class-string<MiddlewareInterface>>
      */
     public function getMiddlewares(): array;
 

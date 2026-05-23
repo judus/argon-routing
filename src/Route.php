@@ -8,6 +8,7 @@ use Closure;
 use Maduser\Argon\Routing\Contracts\MatchedRouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Exception\RouterException;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @psalm-import-type RouteArray from RouteInterface
@@ -17,7 +18,7 @@ final class Route implements RouteInterface, MatchedRouteInterface
 {
     /**
      * @param RouteHandler $handler
-     * @param list<class-string> $middlewares
+     * @param list<class-string<MiddlewareInterface>> $middlewares
      * @param array<int|string, string> $arguments
      */
     public function __construct(

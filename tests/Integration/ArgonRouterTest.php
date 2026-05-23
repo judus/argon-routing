@@ -11,6 +11,7 @@ use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Server\MiddlewareInterface;
 
 final class ArgonRouterTest extends TestCase
 {
@@ -174,8 +175,20 @@ final class ArgonRouterTest extends TestCase
         $router->get('/invalid-middleware', DummyRequestHandler::class, [new \stdClass()]);
     }
 
+    public function testNonMiddlewareClassFailsWithRoutingException(): void
+    {
+        $router = new Router(new ArgonContainer(), new RouteManager(), new RecordingPipelineManager());
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage(
+            'Middleware [' . DummyRequestHandler::class . '] must resolve to Psr\Http\Server\MiddlewareInterface'
+        );
+
+        $router->get('/not-middleware', DummyRequestHandler::class, [DummyRequestHandler::class]);
+    }
+
     /**
-     * @param list<class-string> $middlewares
+     * @param list<class-string<MiddlewareInterface>> $middlewares
      */
     private static function pipelineId(array $middlewares): string
     {
