@@ -12,10 +12,7 @@ use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\RoutePipeline;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 final class RouteDispatchTest extends TestCase
 {
@@ -283,116 +280,4 @@ final class RouteDispatchTest extends TestCase
 
         $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
     }
-}
-
-final class CallTrace
-{
-    /** @var list<string> */
-    public array $events = [];
-
-    public function add(string $event): void
-    {
-        $this->events[] = $event;
-    }
-}
-
-final class RecordingMiddlewareA implements MiddlewareInterface
-{
-    public function __construct(
-        private readonly CallTrace $trace
-    ) {
-    }
-
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        $this->trace->add('A:before');
-        $response = $handler->handle($request);
-        $this->trace->add('A:after');
-        return $response;
-    }
-}
-
-final class RecordingMiddlewareB implements MiddlewareInterface
-{
-    public function __construct(
-        private readonly CallTrace $trace
-    ) {
-    }
-
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        $this->trace->add('B:before');
-        $response = $handler->handle($request);
-        $this->trace->add('B:after');
-        return $response;
-    }
-}
-
-final class RecordingController
-{
-    /** @var list<array{args: array<string, string>}> */
-    public array $calls = [];
-
-    public function __construct(
-        private readonly CallTrace $trace
-    ) {
-    }
-
-    public function __invoke(array $args): string
-    {
-        $this->trace->add('controller');
-        $this->calls[] = ['args' => $args];
-        return 'result:' . ($args['id'] ?? 'missing');
-    }
-}
-
-final class RecordingFinalHandler implements RequestHandlerInterface
-{
-    public ?ServerRequestInterface $handledRequest = null;
-
-    public function __construct(
-        private readonly ResponseInterface $response
-    ) {
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        $this->handledRequest = $request;
-        return $this->response;
-    }
-
-    public function getResponse(): ResponseInterface
-    {
-        return $this->response;
-    }
-}
-
-final class NonCallableHandler
-{
-}
-
-final class MethodBasedController
-{
-    public function __construct(
-        private readonly CallTrace $trace
-    ) {
-    }
-
-    public function show(string $id): string
-    {
-        $this->trace->add('method.show');
-        return 'method:' . $id;
-    }
-}
-
-final class InvokeArrayController
-{
-    public function __invoke(array $payload): string
-    {
-        return 'invoke:' . ($payload['slug'] ?? 'missing');
-    }
-}
-
-final class MethodMissingController
-{
 }

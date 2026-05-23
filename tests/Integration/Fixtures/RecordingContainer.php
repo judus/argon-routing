@@ -28,6 +28,7 @@ final class RecordingContainer implements ContainerInterface
         $this->services = $services;
     }
 
+    #[\Override]
     public function get(string $id): callable
     {
         $this->requestedIds[] = $id;
@@ -39,6 +40,7 @@ final class RecordingContainer implements ContainerInterface
         return $this->services[$id];
     }
 
+    #[\Override]
     public function has(string $id): bool
     {
         return isset($this->services[$id]);

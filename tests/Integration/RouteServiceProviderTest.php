@@ -88,22 +88,3 @@ final class RouteServiceProviderTest extends TestCase
         return $descriptor;
     }
 }
-
-namespace Maduser\Argon\Routing\Tests\Integration\Stubs;
-
-use Maduser\Argon\Middleware\Contracts\MiddlewareStackInterface;
-use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-
-final class NullPipelineManager implements PipelineManagerInterface
-{
-    public function register(MiddlewareStackInterface $stack): void
-    {
-        // no-op for tests
-    }
-
-    public function get(MiddlewareStackInterface|string $keyOrStack): RequestHandlerInterface
-    {
-        throw new \BadMethodCallException('Not required in tests.');
-    }
-}

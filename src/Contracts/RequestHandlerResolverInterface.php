@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Maduser\Argon\Routing\Contracts;
 
 use Psr\Http\Message\ServerRequestInterface;

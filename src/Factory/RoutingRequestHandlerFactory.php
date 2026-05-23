@@ -20,12 +20,13 @@ final readonly class RoutingRequestHandlerFactory
     {
         $resolver = $this->resolver;
 
-        return new class($resolver) implements RequestHandlerInterface {
+        return new class ($resolver) implements RequestHandlerInterface {
             public function __construct(
                 private readonly RequestHandlerResolverInterface $resolver
             ) {
             }
 
+            #[\Override]
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $handler = $this->resolver->resolve($request);

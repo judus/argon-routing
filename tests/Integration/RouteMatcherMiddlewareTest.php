@@ -25,13 +25,16 @@ final class RouteMatcherMiddlewareTest extends TestCase
             name: 'users.show',
             pattern: '/users/{id}',
             handler: 'UserController@show',
-            middlewares: ['auth'],
+            middlewares: [FirstMiddleware::class],
             arguments: ['id' => '42'],
         );
 
         $matcher = new class ($route) implements RouteMatcherInterface {
-            public function __construct(private Route $route) {}
+            public function __construct(private Route $route)
+            {
+            }
 
+            #[\Override]
             public function match(ServerRequestInterface $request): Route
             {
                 return $this->route;
@@ -50,6 +53,7 @@ final class RouteMatcherMiddlewareTest extends TestCase
             public bool $handled = false;
             public ?ServerRequestInterface $request = null;
 
+            #[\Override]
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $this->handled = true;
@@ -61,7 +65,7 @@ final class RouteMatcherMiddlewareTest extends TestCase
         $response = $middleware->process($request, $handler);
 
         self::assertTrue($handler->handled);
-        self::assertInstanceOf(RouteInterface::class, $handler->request->getAttribute(RouteInterface::class));
+        self::assertInstanceOf(RouteInterface::class, $handler->request?->getAttribute(RouteInterface::class));
         self::assertSame(200, $response->getStatusCode());
         self::assertTrue($testHandler->hasInfoThatContains('Route matched'));
     }

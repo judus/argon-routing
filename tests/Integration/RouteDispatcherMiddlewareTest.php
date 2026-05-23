@@ -15,8 +15,6 @@ use Maduser\Argon\Routing\Tests\Integration\Fixtures\RouteDispatcherRecordingHan
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Container\ContainerInterface;
-use RuntimeException;
 
 final class RouteDispatcherMiddlewareTest extends TestCase
 {
@@ -31,9 +29,12 @@ final class RouteDispatcherMiddlewareTest extends TestCase
             arguments: ['id' => '42'],
         );
 
-        $container = new RecordingContainer([
-            '/items/{id}' => fn(array $args) => 'result:' . $args['id'],
-        ]);
+        /** @param array{id: string} $args */
+        $invoker = static function (array $args): string {
+            $id = $args['id'] ?? '';
+            return 'result:' . (is_scalar($id) ? (string) $id : '');
+        };
+        $container = new RecordingContainer(['/items/{id}' => $invoker]);
 
         $result = new RecordingResultContext();
         $psr17 = new Psr17Factory();
@@ -53,11 +54,21 @@ final class RouteDispatcherMiddlewareTest extends TestCase
 
     public function testClosureHandlersInvokeDirectly(): void
     {
+        /** @param array<string, string> $args */
+        $closureHandler = static function (array $args): string {
+            $values = array_map(
+                static fn(mixed $value): string => is_scalar($value) ? (string) $value : get_debug_type($value),
+                array_values($args)
+            );
+
+            return 'closure:' . implode(',', $values);
+        };
+
         $route = new Route(
             method: 'GET',
             name: 'closure',
             pattern: '/closure',
-            handler: fn(array $args): string => 'closure:' . implode(',', $args),
+            handler: $closureHandler,
             arguments: ['foo' => 'bar'],
         );
 
@@ -112,25 +123,7 @@ final class RouteDispatcherMiddlewareTest extends TestCase
             handler: [BrokenController::class, 'show'],
         );
 
-        $container = new class('/broken') implements ContainerInterface {
-            public function __construct(private readonly string $routeId)
-            {
-            }
-
-            public function get(string $id): mixed
-            {
-                if ($id === $this->routeId) {
-                    return 'not-callable';
-                }
-
-                throw new RuntimeException("Service [$id] not mocked.");
-            }
-
-            public function has(string $id): bool
-            {
-                return $id === $this->routeId;
-            }
-        };
+        $container = new NonCallableRouteContainer('/broken');
         $result = new RecordingResultContext();
         $psr17 = new Psr17Factory();
         $middleware = new RouteDispatcherMiddleware($container);
@@ -194,12 +187,5 @@ final class RouteDispatcherMiddlewareTest extends TestCase
                 ->withAttribute(ResultContextInterface::class, $result),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
-    }
-}
-
-final class BrokenController
-{
-    public function __construct()
-    {
     }
 }

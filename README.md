@@ -34,6 +34,8 @@ use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
 use Maduser\Argon\Routing\RouteMatcher;
+use App\Http\Middleware\AuthMiddleware;
+use App\Http\Middleware\CsrfMiddleware;
 use Nyholm\Psr7\Factory\Psr17Factory;
 
 $container = new ArgonContainer();
@@ -41,8 +43,8 @@ $routes = new RouteManager();                // defaults to the in-memory store
 $router = new Router($container, $routes);
 
 // Define routes just like in a typical HTTP kernel
-$router->get('/users/{id}', 'UsersController@show', middleware: ['auth']);
-$router->post('/users', 'UsersController@store', middleware: ['auth', 'csrf']);
+$router->get('/users/{id}', 'UsersController@show', middleware: [AuthMiddleware::class]);
+$router->post('/users', 'UsersController@store', middleware: [AuthMiddleware::class, CsrfMiddleware::class]);
 
 // Match an incoming request
 $psr17 = new Psr17Factory();
@@ -54,7 +56,7 @@ $matched = $matcher->match($request);
 // Inspect the matched route (all PSR types)
 $matched->getHandler();      // UsersController@show
 $matched->getArguments();    // ['id' => '42']
-$matched->getMiddlewares();  // ['auth']
+$matched->getMiddlewares();  // [AuthMiddleware::class]
 ```
 
 Once you hand the `RouteManager` instance to Argon’s middleware pipeline and

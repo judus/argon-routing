@@ -16,12 +16,14 @@ final readonly class RouteMatcherMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private RouteMatcherInterface $matcher,
-        private LoggerInterface       $logger,
+        private LoggerInterface $logger,
     ) {
     }
 
+    #[\Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        /** @var RouteInterface|null $route */
         $route = $request->getAttribute(RouteInterface::class);
 
         if (!$route instanceof RouteInterface) {

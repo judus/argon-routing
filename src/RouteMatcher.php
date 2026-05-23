@@ -16,6 +16,7 @@ final readonly class RouteMatcher implements RouteMatcherInterface
     ) {
     }
 
+    #[\Override]
     public function match(ServerRequestInterface $request): MatchedRouteInterface
     {
         $method = strtoupper($request->getMethod());

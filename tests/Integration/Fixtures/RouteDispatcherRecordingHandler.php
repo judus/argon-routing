@@ -20,6 +20,7 @@ final class RouteDispatcherRecordingHandler implements RequestHandlerInterface
     ) {
     }
 
+    #[\Override]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return $this->response;

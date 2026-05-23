@@ -20,7 +20,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
         $request = $psr17->createServerRequest('GET', '/items/42');
         $response = $psr17->createResponse(201);
 
-        $resolvedHandler = new class($response) implements RequestHandlerInterface {
+        $resolvedHandler = new class ($response) implements RequestHandlerInterface {
             public ?ServerRequestInterface $handledRequest = null;
 
             public function __construct(
@@ -28,6 +28,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             ) {
             }
 
+            #[\Override]
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $this->handledRequest = $request;
@@ -35,7 +36,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             }
         };
 
-        $resolver = new class($resolvedHandler) implements RequestHandlerResolverInterface {
+        $resolver = new class ($resolvedHandler) implements RequestHandlerResolverInterface {
             public ?ServerRequestInterface $resolvedWith = null;
 
             public function __construct(
@@ -43,6 +44,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             ) {
             }
 
+            #[\Override]
             public function resolve(?ServerRequestInterface $request = null): RequestHandlerInterface
             {
                 $this->resolvedWith = $request;
@@ -66,7 +68,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
         $request = $psr17->createServerRequest('POST', '/submit');
         $response = $psr17->createResponse(202);
 
-        $resolvedHandler = new class($response) implements RequestHandlerInterface {
+        $resolvedHandler = new class ($response) implements RequestHandlerInterface {
             public ?ServerRequestInterface $handledRequest = null;
 
             public function __construct(
@@ -74,6 +76,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             ) {
             }
 
+            #[\Override]
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $this->handledRequest = $request;
@@ -81,7 +84,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             }
         };
 
-        $resolver = new class($resolvedHandler) implements RequestHandlerResolverInterface {
+        $resolver = new class ($resolvedHandler) implements RequestHandlerResolverInterface {
             public ?ServerRequestInterface $resolvedWith = null;
 
             public function __construct(
@@ -89,6 +92,7 @@ final class RoutingRequestHandlerFactoryTest extends TestCase
             ) {
             }
 
+            #[\Override]
             public function resolve(?ServerRequestInterface $request = null): RequestHandlerInterface
             {
                 $this->resolvedWith = $request;

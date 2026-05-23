@@ -4,22 +4,14 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Contracts;
 
-use Closure;
-use Psr\Http\Server\MiddlewareInterface;
-
+/**
+ * @psalm-import-type RouteArray from RouteInterface
+ */
 interface RouteStoreInterface
 {
     /**
      * @param string $method
-     * @return array<string, array{
-     *      method: string,
-     *      name?: string,
-     *      pattern: string,
-     *      compiled?: string,
-     *      handler: class-string|array{0: class-string, 1: string}|Closure,
-     *      pipelineId?: string,
-     *      middlewares?: list<class-string<MiddlewareInterface>|MiddlewareInterface>
-     *  }>
+     * @return array<string, RouteArray>
      */
     public function all(string $method): array;
 

@@ -29,11 +29,13 @@ final class RouterMiddlewareOrderingTest extends TestCase
             /** @var list<list<class-string>> */
             public array $recorded = [];
 
+            #[\Override]
             public function register(MiddlewareStackInterface $stack): void
             {
                 $this->recorded[] = $stack->toArray();
             }
 
+            #[\Override]
             public function get(MiddlewareStackInterface|string $keyOrStack): RequestHandlerInterface
             {
                 throw new \BadMethodCallException('Not required for this test.');

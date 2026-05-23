@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Exception;
 
 use RuntimeException;
+
 use function json_encode;
 
 final class RouterException extends RuntimeException
@@ -34,6 +35,11 @@ final class RouterException extends RuntimeException
         $label = $method !== null ? $serviceId . '::' . $method : $serviceId;
 
         return new self("Handler [$label] is not callable (got: $type).");
+    }
+
+    public static function forInvalidMiddlewareService(string $serviceId, string $type): self
+    {
+        return new self("Middleware [$serviceId] must resolve to Psr\\Http\\Server\\MiddlewareInterface (got: $type).");
     }
 
     public static function forMiddlewareRecursion(string $middlewareName): self

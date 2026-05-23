@@ -28,6 +28,7 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
      * @throws ContainerException
      * @throws NotFoundException
      */
+    #[\Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         /** @var MatchedRouteInterface|null $route */
@@ -52,20 +53,10 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
             $serviceId = $routeHandler[0];
             $method    = isset($routeHandler[1]) ? (string) $routeHandler[1] : null;
         } else {
-            $serviceId = (string) $routeHandler;
+            $serviceId = $routeHandler;
         }
 
         $invoker = $this->container->get($serviceId);
-
-        if ($method !== null) {
-            if (!is_callable([$invoker, $method])) {
-                $type = get_debug_type($invoker);
-                throw RouterException::forNonCallableHandler($serviceId, $type, $method);
-            }
-        } elseif (!is_callable($invoker)) {
-            $type = get_debug_type($invoker);
-            throw RouterException::forNonCallableHandler($serviceId, $type);
-        }
 
         if ($serviceId === DispatchMiddleware::class) {
             throw RouterException::forMiddlewareRecursion('DispatchMiddleware');
@@ -73,9 +64,24 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
 
         $arguments = $route->getArguments();
 
-        $callable = $method !== null && $method !== '__invoke'
-            ? fn(): mixed => $invoker->{$method}(...$arguments)
-            : fn(): mixed => $invoker($arguments);
+        if ($method !== null && $method !== '__invoke') {
+            $routeCallable = [$invoker, $method];
+
+            if (!is_callable($routeCallable)) {
+                $type = get_debug_type($invoker);
+                throw RouterException::forNonCallableHandler($serviceId, $type, $method);
+            }
+
+            $callable = static fn(): mixed => $routeCallable(...$arguments);
+        } else {
+            if (!is_callable($invoker)) {
+                $type = get_debug_type($invoker);
+                throw RouterException::forNonCallableHandler($serviceId, $type);
+            }
+
+            /** @var callable(array<int|string, string>): mixed $invoker */
+            $callable = static fn(): mixed => $invoker($arguments);
+        }
 
         return $this->pipeline->handle(
             $route->getMiddlewares(),

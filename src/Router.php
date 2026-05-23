@@ -16,6 +16,7 @@ final class Router implements RouterInterface
     private const ROUTE_LEVEL_PRIORITY = 6100;
 
     private ?PipelineManagerInterface $pipelines;
+    /** @var array<int|string, mixed> */
     private array $groupMiddleware = [];
     private string $groupPrefix = '';
 
@@ -28,8 +29,10 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @param class-string|array{0: class-string, 1: string}|Closure $handler
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
      */
+    #[\Override]
     public function add(
         string $method,
         string $pattern,
@@ -70,9 +73,16 @@ final class Router implements RouterInterface
             return $optional ? "(?:$segment)?" : $segment;
         }, rtrim($routePattern, '/'));
 
+        if ($pattern === null) {
+            throw new \LogicException('Route pattern compilation failed.');
+        }
+
         return '#^' . $pattern . '/?$#';
     }
 
+    /**
+     * @param array<int|string, mixed> $middlewares
+     */
     private function resolveMiddlewares(array $middlewares): MiddlewareStackInterface
     {
         if ($middlewares === []) {
@@ -88,7 +98,7 @@ final class Router implements RouterInterface
     /**
      * @param array<int|string, mixed> $middlewares
      * @param array<string, array<string, mixed>> $meta
-     * @return list<array{class: string, priority: int|null, index: int}>
+     * @return list<array{class: class-string, priority: int|null, index: int}>
      */
     private function normaliseRouteMiddleware(array $middlewares, array $meta): array
     {
@@ -98,8 +108,8 @@ final class Router implements RouterInterface
         foreach ($middlewares as $key => $entry) {
             if (is_string($key) && is_array($entry)) {
                 $normalized[] = [
-                    'class' => $key,
-                    'priority' => array_key_exists('priority', $entry) ? (int) $entry['priority'] : null,
+                    'class' => $this->middlewareClass($key),
+                    'priority' => $this->priorityOverride($entry),
                     'index' => $position++,
                 ];
                 continue;
@@ -107,8 +117,8 @@ final class Router implements RouterInterface
 
             if (is_array($entry) && isset($entry['class']) && is_string($entry['class'])) {
                 $normalized[] = [
-                    'class' => $entry['class'],
-                    'priority' => array_key_exists('priority', $entry) ? (int) $entry['priority'] : null,
+                    'class' => $this->middlewareClass($entry['class']),
+                    'priority' => $this->priorityOverride($entry),
                     'index' => $position++,
                 ];
                 continue;
@@ -122,7 +132,7 @@ final class Router implements RouterInterface
 
             if ($expanded === null) {
                 $normalized[] = [
-                    'class' => $entry,
+                    'class' => $this->middlewareClass($entry),
                     'priority' => null,
                     'index' => $position++,
                 ];
@@ -143,6 +153,7 @@ final class Router implements RouterInterface
 
     /**
      * @param array<string, array<string, mixed>> $meta
+     * @return list<class-string>|null
      */
     private function expandAlias(string $alias, array $meta): ?array
     {
@@ -158,7 +169,7 @@ final class Router implements RouterInterface
                 : array_map('trim', explode(',', (string) $attributes['group']));
 
             if (in_array($alias, $groups, true)) {
-                $matches[] = $class;
+                $matches[] = $this->middlewareClass($class);
             }
         }
 
@@ -166,7 +177,27 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @param list<array{class: string, priority: int|null, index: int}|string> $middleware
+     * @return class-string
+     */
+    private function middlewareClass(string $class): string
+    {
+        if (!class_exists($class)) {
+            throw new \InvalidArgumentException("Unknown middleware class or group alias [$class].");
+        }
+
+        return $class;
+    }
+
+    /**
+     * @param array<array-key, mixed> $attributes
+     */
+    private function priorityOverride(array $attributes): ?int
+    {
+        return array_key_exists('priority', $attributes) ? (int) $attributes['priority'] : null;
+    }
+
+    /**
+     * @param list<array{class: class-string, priority: int|null, index: int}> $middleware
      * @param array<string, array<string, mixed>> $meta
      */
     private function buildSortedStack(array $middleware, array $meta): MiddlewareStack
@@ -174,23 +205,17 @@ final class Router implements RouterInterface
         $withPriority = [];
 
         foreach ($middleware as $descriptor) {
-            if (is_string($descriptor)) {
-                $class = $descriptor;
-                $priorityOverride = null;
-                $index = count($withPriority);
-            } else {
-                $class = $descriptor['class'];
-                $priorityOverride = $descriptor['priority'];
-                $index = $descriptor['index'];
-            }
+            $class = $descriptor['class'];
+            $priorityOverride = $descriptor['priority'];
+            $index = $descriptor['index'];
 
             $priority = $priorityOverride
-                ?? ($meta[$class]['priority'] ?? null)
+                ?? $this->priorityOverride($meta[$class] ?? [])
                 ?? self::ROUTE_LEVEL_PRIORITY;
 
             $withPriority[] = [
                 'class' => $class,
-                'priority' => (int) $priority,
+                'priority' => $priority,
                 'index' => $index,
             ];
         }
@@ -203,9 +228,18 @@ final class Router implements RouterInterface
             }
         );
 
-        return new MiddlewareStack(array_column($withPriority, 'class'));
+        $classes = [];
+        foreach ($withPriority as $middleware) {
+            $classes[] = $middleware['class'];
+        }
+
+        return new MiddlewareStack($classes);
     }
 
+    /**
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function group(array $middleware, string $prefix, callable $callback): void
     {
         $previousPrefix = $this->groupPrefix;
@@ -220,6 +254,11 @@ final class Router implements RouterInterface
         $this->groupMiddleware = $previousMiddleware;
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function get(
         string $path,
         string|array|Closure $handler,
@@ -229,6 +268,11 @@ final class Router implements RouterInterface
         $this->add('GET', $path, $handler, $middleware, $name);
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function post(
         string $path,
         string|array|Closure $handler,
@@ -238,6 +282,11 @@ final class Router implements RouterInterface
         $this->add('POST', $path, $handler, $middleware, $name);
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function put(
         string $path,
         string|array|Closure $handler,
@@ -247,6 +296,11 @@ final class Router implements RouterInterface
         $this->add('PUT', $path, $handler, $middleware, $name);
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function patch(
         string $path,
         string|array|Closure $handler,
@@ -256,6 +310,11 @@ final class Router implements RouterInterface
         $this->add('PATCH', $path, $handler, $middleware, $name);
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function delete(
         string $path,
         string|array|Closure $handler,
@@ -265,6 +324,11 @@ final class Router implements RouterInterface
         $this->add('DELETE', $path, $handler, $middleware, $name);
     }
 
+    /**
+     * @param string|array{0: string, 1?: string}|Closure $handler
+     * @param array<int|string, mixed> $middleware
+     */
+    #[\Override]
     public function options(
         string $path,
         string|array|Closure $handler,

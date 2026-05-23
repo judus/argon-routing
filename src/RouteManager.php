@@ -8,8 +8,10 @@ use Closure;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteStoreInterface;
 use Maduser\Argon\Routing\Store\InMemoryStore;
-use Psr\Http\Server\MiddlewareInterface;
 
+/**
+ * @psalm-import-type RouteArray from RouteInterface
+ */
 final class RouteManager
 {
     private RouteStoreInterface $store;
@@ -22,15 +24,7 @@ final class RouteManager
 
     /**
      * @param string $method
-     * @return array<string, array{
-     *      method: string,
-     *      name?: string,
-     *      pattern: string,
-     *      compiled?: string,
-     *      handler: class-string|array{0: class-string, 1: string}|Closure,
-     *      pipelineId?: string,
-     *      middlewares?: list<class-string<MiddlewareInterface>|MiddlewareInterface>
-     *  }>
+     * @return array<string, RouteArray>
      */
     public function getRoutesFor(string $method): array
     {

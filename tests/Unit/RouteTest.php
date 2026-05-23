@@ -6,6 +6,8 @@ namespace Maduser\Argon\Routing\Tests\Unit;
 
 use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Route;
+use Maduser\Argon\Routing\Tests\Integration\FirstMiddleware;
+use Maduser\Argon\Routing\Tests\Integration\SecondMiddleware;
 use PHPUnit\Framework\TestCase;
 
 final class RouteTest extends TestCase
@@ -21,14 +23,14 @@ final class RouteTest extends TestCase
 
         $route->setCompiled('#^/users$#');
         $route->setPipelineId('pipeline__123');
-        $route->setMiddlewares(['auth', 'throttle']);
+        $route->setMiddlewares([FirstMiddleware::class, SecondMiddleware::class]);
         $route->setArguments(['id' => '10']);
 
         self::assertSame('POST', $route->getMethod());
         self::assertSame('users.store', $route->getName());
         self::assertSame('#^/users$#', $route->getCompiled());
         self::assertSame('pipeline__123', $route->getPipelineId());
-        self::assertSame(['auth', 'throttle'], $route->getMiddlewares());
+        self::assertSame([FirstMiddleware::class, SecondMiddleware::class], $route->getMiddlewares());
         self::assertSame(['id' => '10'], $route->getArguments());
 
         $array = $route->toArray();

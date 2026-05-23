@@ -29,41 +29,16 @@
                 <directory name="tests"/>
             </errorLevel>
         </PossiblyUnusedMethod>
-        <UnusedBaselineEntry>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </UnusedBaselineEntry>
         <UnusedClass>
             <errorLevel type="suppress">
                 <directory name="tests"/>
             </errorLevel>
         </UnusedClass>
-        <UnusedMethod>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </UnusedMethod>
-        <UndefinedClass>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </UndefinedClass>
-        <PossiblyUndefinedMethod>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </PossiblyUndefinedMethod>
         <PropertyNotSetInConstructor>
             <errorLevel type="suppress">
                 <directory name="tests"/>
             </errorLevel>
         </PropertyNotSetInConstructor>
-        <InternalMethod>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </InternalMethod>
         <MixedArgument>
             <errorLevel type="suppress">
                 <directory name="tests"/>
@@ -74,26 +49,6 @@
                 <directory name="tests"/>
             </errorLevel>
         </MixedAssignment>
-        <MixedMethodCall>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </MixedMethodCall>
-        <PossiblyUnusedProperty>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </PossiblyUnusedProperty>
-        <PossiblyUnusedParam>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </PossiblyUnusedParam>
-        <PossiblyUnusedReturnValue>
-            <errorLevel type="suppress">
-                <directory name="tests"/>
-            </errorLevel>
-        </PossiblyUnusedReturnValue>
         <MixedArrayAccess>
             <errorLevel type="suppress">
                 <directory name="tests"/>

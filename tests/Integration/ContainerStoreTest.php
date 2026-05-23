@@ -31,7 +31,7 @@ final class ContainerStoreTest extends TestCase
             handler: [TestContainerStoreController::class, 'handle'],
             compiled: '#^/users/(?P<id>[^/]+)/?$#',
             pipelineId: 'pipeline__xyz',
-            middlewares: ['auth'],
+            middlewares: [TestContainerStoreMiddleware::class],
         );
 
         $store->add($route);
@@ -39,7 +39,6 @@ final class ContainerStoreTest extends TestCase
         $all = $store->all('GET');
         self::assertArrayHasKey('/users/{id}', $all);
         self::assertSame('users.show', $all['/users/{id}']['name']);
-
     }
 
     public function testAddRejectsClosureHandlers(): void
@@ -82,6 +81,28 @@ final class ContainerStoreTest extends TestCase
         self::assertNull($invocation['id']);
     }
 
+    public function testAddSupportsStringMethodHandlers(): void
+    {
+        $container = new ArgonContainer();
+        $store = new ContainerStore($container);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'users.show',
+            pattern: '/users/{id}',
+            handler: TestContainerStoreController::class . '@handle',
+            compiled: '#^/users/(?P<id>[^/]+)$#',
+        );
+
+        $store->add($route);
+
+        $descriptor = $container->getDescriptor(TestContainerStoreController::class);
+        self::assertNotNull($descriptor);
+        $invocation = $descriptor->getInvocation('handle');
+        self::assertArrayHasKey('id', $invocation);
+        self::assertNull($invocation['id']);
+    }
+
     public function testAddReusesExistingDescriptor(): void
     {
         $container = new ArgonContainer();
@@ -119,32 +140,11 @@ final class ContainerStoreTest extends TestCase
         );
 
         $this->expectException(RouteHandlerException::class);
-        $this->expectExceptionMessage('Unable to prepare handler [Maduser\Argon\Routing\Tests\Integration\TestContainerStoreController::doesNotExist] for route [/broken]');
+        $this->expectExceptionMessage(sprintf(
+            'Unable to prepare handler [%s::doesNotExist] for route [/broken]',
+            TestContainerStoreController::class
+        ));
 
         $store->add($route);
-    }
-}
-
-final class TestContainerStoreController
-{
-    public function handle(string $id): string
-    {
-        return $id;
-    }
-}
-
-final class InvokableRouteController
-{
-    public function __invoke(string $id): string
-    {
-        return $id;
-    }
-}
-
-final class ExistingContainerController
-{
-    public function handle(string $id): string
-    {
-        return $id;
     }
 }

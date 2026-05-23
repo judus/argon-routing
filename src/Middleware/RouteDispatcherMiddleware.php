@@ -28,8 +28,10 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
+    #[\Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        /** @var RouteInterface|null $route */
         $route = $request->getAttribute(RouteInterface::class);
 
         if (!$route instanceof RouteInterface) {
@@ -37,12 +39,12 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
         }
 
         $handlerDef = $route->getHandler();
-        $serviceId = null;
-        $method = null;
 
         if ($handlerDef instanceof Closure) {
             $invoker = $handlerDef;
         } else {
+            $method = null;
+
             if (is_array($handlerDef)) {
                 if (!isset($handlerDef[0]) || !is_string($handlerDef[0])) {
                     throw RouterException::forMalformedHandlerDefinition($handlerDef);
@@ -51,31 +53,33 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
                 $serviceId = $handlerDef[0];
                 $method = isset($handlerDef[1]) ? (string) $handlerDef[1] : null;
             } else {
-                $serviceId = (string) $handlerDef;
+                $serviceId = $handlerDef;
             }
 
             if ($serviceId === self::class) {
                 throw RouterException::forMiddlewareRecursion('RouteDispatcherMiddleware');
             }
 
-            $invoker = $this->container->get($route->getPattern());
+            $resolved = $this->container->get($route->getPattern());
 
-            if (!is_callable($invoker)) {
-                $type = get_debug_type($invoker);
-                throw RouterException::forNonCallableHandler($serviceId ?? $route->getPattern(), $type, $method);
+            if (!is_callable($resolved)) {
+                $type = get_debug_type($resolved);
+                throw RouterException::forNonCallableHandler($serviceId, $type, $method);
             }
+
+            $invoker = $resolved;
         }
 
         $args = $route->getArguments();
 
-        $result = $invoker($args);
-
+        /** @var callable(array<int|string, string>): mixed $invoker */
+        /** @var ResultContextInterface|null $context */
         $context = $request->getAttribute(ResultContextInterface::class);
         if (!$context instanceof ResultContextInterface) {
             $context = new ResultContext();
         }
 
-        $context->set($result);
+        $context->set($invoker($args));
 
         return $handler->handle(
             $request->withAttribute(ResultContextInterface::class, $context)

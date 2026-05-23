@@ -17,6 +17,7 @@ final class RoutedRequestHandler implements RequestHandlerInterface
     ) {
     }
 
+    #[\Override]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $requestWithRoute = $request->getAttribute(RouteInterface::class) instanceof RouteInterface

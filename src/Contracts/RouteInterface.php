@@ -1,10 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Maduser\Argon\Routing\Contracts;
 
 use Closure;
-use Psr\Http\Server\MiddlewareInterface;
 
+/**
+ * @psalm-type RouteHandler = string|array<array-key, mixed>|Closure
+ * @psalm-type RouteArray = array{
+ *     method: string,
+ *     name: string,
+ *     pattern: string,
+ *     compiled: ?string,
+ *     handler: string,
+ *     pipelineId: ?string,
+ *     middlewares: list<class-string>,
+ *     arguments: array<int|string, string>
+ * }
+ */
 interface RouteInterface
 {
     public function getName(): ?string;
@@ -13,6 +27,9 @@ interface RouteInterface
 
     public function getMethod(): string;
 
+    /**
+     * @return RouteHandler
+     */
     public function getHandler(): string|array|Closure;
 
     public function setPipelineId(?string $pipelineId): void;
@@ -20,13 +37,13 @@ interface RouteInterface
     public function getPipelineId(): ?string;
 
     /**
-     * @param list<class-string<MiddlewareInterface>|MiddlewareInterface> $middlewares
+     * @param list<class-string> $middlewares
      * @return void
      */
     public function setMiddlewares(array $middlewares): void;
 
     /**
-     * @return list<class-string<MiddlewareInterface>|MiddlewareInterface>
+     * @return list<class-string>
      */
     public function getMiddlewares(): array;
 
@@ -36,7 +53,13 @@ interface RouteInterface
      */
     public function setArguments(array $args): void;
 
+    /**
+     * @return array<int|string, string>
+     */
     public function getArguments(): array;
 
+    /**
+     * @return RouteArray
+     */
     public function toArray(): array;
 }

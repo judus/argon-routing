@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing;
 
 use Maduser\Argon\Middleware\Contracts\PipelineStoreInterface;
-use Maduser\Argon\Middleware\MiddlewareStack;
 use Maduser\Argon\Routing\Contracts\RequestHandlerResolverInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Contracts\RouteMatcherInterface;
+use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,8 +22,10 @@ final readonly class RequestHandlerResolver implements RequestHandlerResolverInt
     ) {
     }
 
+    #[\Override]
     public function resolve(ServerRequestInterface $request): RequestHandlerInterface
     {
+        /** @var RouteInterface|null $route */
         $route = $request->getAttribute(RouteInterface::class);
 
         if (!$route instanceof RouteInterface) {
@@ -36,12 +38,15 @@ final readonly class RequestHandlerResolver implements RequestHandlerResolverInt
             'pipelineId' => $route->getPipelineId(),
         ]);
 
-        $pipeline = $route->getPipelineId() !== null
-            ? $this->pipelines->get($route->getPipelineId())
-            : $this->pipelines->get(new MiddlewareStack($route->getMiddlewares()));
+        $pipelineId = $route->getPipelineId();
+        $stack = new MiddlewareStack($route->getMiddlewares());
+
+        $pipeline = $pipelineId !== null
+            ? $this->pipelines->get($pipelineId)
+            : $this->pipelines->get($stack);
 
         $this->logger->info('RequestHandler resolved', [
-            'pipeline' => $route->getPipelineId() ?? (new MiddlewareStack($route->getMiddlewares()))->toArray(),
+            'pipeline' => $pipelineId ?? $stack->toArray(),
         ]);
 
         return new RoutedRequestHandler($pipeline, $route);

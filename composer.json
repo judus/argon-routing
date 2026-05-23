@@ -1,6 +1,8 @@
 {
   "name": "maduser/argon-routing",
+  "description": "HTTP routing layer for the Argon stack.",
   "type": "library",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "Maduser\\Argon\\Routing\\": "src/"
@@ -59,16 +61,15 @@
     "psalm": "vendor/bin/psalm --output-format=github",
     "psalm:clear": "vendor/bin/psalm --clear-cache",
     "test": "vendor/bin/phpunit",
-    "test:coverage": "mkdir -p .phpunit/coverage/html && vendor/bin/phpunit --coverage-html .phpunit/coverage/html --coverage-clover .phpunit/coverage/clover.xml && open .phpunit/coverage/html/index.html",
+    "test:coverage": "mkdir -p .phpunit/coverage/html && vendor/bin/phpunit --coverage-html .phpunit/coverage/html --coverage-clover .phpunit/coverage/clover.xml",
     "ti": "vendor/bin/phpunit --testsuite=unit",
     "tu": "vendor/bin/phpunit --testsuite=unit",
     "watch": "find src/ | entr -r composer check",
     "watch:test": "find src/ | entr -r composer test",
     "watch:fix": "find src/ | entr -r composer phpcs:fix",
     "check": [
-      "@test:coverage",
+      "@test",
       "@psalm",
-      "@phpcs:fix",
       "@phpcs"
     ],
     "ci": [

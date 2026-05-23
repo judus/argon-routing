@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Store;
 
-use Closure;
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Container\Exceptions\ContainerException;
 use Maduser\Argon\Container\ServiceDescriptor;
@@ -16,6 +15,9 @@ use Maduser\Argon\Routing\Exception\RouteHandlerException;
 use Maduser\Argon\Routing\Exception\RouterException;
 use ReflectionException;
 
+/**
+ * @psalm-import-type RouteArray from RouteInterface
+ */
 final readonly class ContainerStore implements RouteStoreInterface
 {
     public function __construct(
@@ -24,20 +26,11 @@ final readonly class ContainerStore implements RouteStoreInterface
     }
 
     /** @inheritdoc */
+    #[\Override]
     public function all(string $method): array
     {
         $tag = 'route.' . strtoupper($method);
-        /**
-         * @var array<string, array{
-         *     method: string,
-         *     name?: string,
-         *     pattern: string,
-         *     compiled?: string,
-         *     handler: class-string|array{0: class-string, 1: string}|Closure,
-         *     pipelineId?: string,
-         *     middlewares?: list<class-string>
-         * }>
-         */
+        /** @var array<string, RouteArray> */
         return $this->container->getTaggedMeta($tag);
     }
 
@@ -45,26 +38,36 @@ final readonly class ContainerStore implements RouteStoreInterface
      * @throws ReflectionException
      * @throws ContainerException
      */
+    #[\Override]
     public function add(RouteInterface $route): void
     {
         $handler = $route->getHandler();
-        $methodName = '__invoke';
 
         if (is_array($handler)) {
-            [$class, $methodName] = $handler;
+            if (!isset($handler[0]) || !is_string($handler[0])) {
+                throw RouterException::forMalformedHandlerDefinition($handler);
+            }
+
+            $class = $handler[0];
+            $methodName = isset($handler[1]) ? (string) $handler[1] : '__invoke';
         } elseif (is_string($handler)) {
-            $class = $handler;
+            [$class, $methodName] = $this->parseStringHandler($handler);
         } else {
             throw RouterException::forUnsupportedClosureInContainerStore();
         }
 
-        /**
-         * @var class-string $class
-         * @var string $methodName
-         */
+        if (!class_exists($class)) {
+            throw RouteHandlerException::forPreparationFailure(
+                $route->getPattern(),
+                $class,
+                $methodName,
+                new ReflectionException("Handler class [$class] does not exist.")
+            );
+        }
+
         try {
             $args = ReflectionUtils::getMethodParameters($class, $methodName);
-        } catch (ReflectionException|ContainerException $e) {
+        } catch (ReflectionException | ContainerException $e) {
             throw RouteHandlerException::forPreparationFailure(
                 $route->getPattern(),
                 $class,
@@ -104,5 +107,25 @@ final readonly class ContainerStore implements RouteStoreInterface
             'serviceId' => $class,
             'method' => $methodName,
         ])->tag([$routeTag => $meta]);
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function parseStringHandler(string $handler): array
+    {
+        if (!str_contains($handler, '@')) {
+            return [$handler, '__invoke'];
+        }
+
+        $parts = explode('@', $handler, 2);
+        $class = $parts[0];
+        $method = $parts[1] ?? '';
+
+        if ($class === '' || $method === '') {
+            throw RouterException::forMalformedHandlerDefinition([$class, $method]);
+        }
+
+        return [$class, $method];
     }
 }

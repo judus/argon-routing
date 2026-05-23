@@ -21,4 +21,3 @@ final class RouteNotFoundExceptionTest extends TestCase
         self::assertSame($previous, $exception->getPrevious());
     }
 }
-
