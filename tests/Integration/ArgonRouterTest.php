@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
+use Maduser\Argon\Middleware\Contracts\Middleware\DispatcherInterface;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
@@ -132,6 +133,24 @@ final class ArgonRouterTest extends TestCase
             ExplicitMiddleware::class,
             StringAliasMiddleware::class,
         ], $pipelines->registeredStacks[0]->toArray());
+    }
+
+    public function testGroupExpandsMiddlewareInterfaceServiceIds(): void
+    {
+        $container = new ArgonContainer();
+        $container->tag(DispatcherInterface::class, ['middleware.http' => ['group' => ['web'], 'priority' => 6000]]);
+
+        $routes = new RouteManager();
+        $pipelines = new RecordingPipelineManager();
+        $router = new Router($container, $routes, $pipelines);
+
+        $router->group(['web'], '', static function (Router $router): void {
+            $router->get('/interface-middleware', DummyRequestHandler::class);
+        });
+
+        $registered = $routes->getRoutesFor('GET');
+        self::assertSame([DispatcherInterface::class], $registered['/interface-middleware']['middlewares']);
+        self::assertSame([DispatcherInterface::class], $pipelines->registeredStacks[0]->toArray());
     }
 
     /**

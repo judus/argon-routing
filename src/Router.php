@@ -108,7 +108,7 @@ final class Router implements RouterInterface
         foreach ($middlewares as $key => $entry) {
             if (is_string($key) && is_array($entry)) {
                 $normalized[] = [
-                    'class' => $this->middlewareClass($key),
+                    'class' => $this->middlewareServiceId($key),
                     'priority' => $this->priorityOverride($entry),
                     'index' => $position++,
                 ];
@@ -117,7 +117,7 @@ final class Router implements RouterInterface
 
             if (is_array($entry) && isset($entry['class']) && is_string($entry['class'])) {
                 $normalized[] = [
-                    'class' => $this->middlewareClass($entry['class']),
+                    'class' => $this->middlewareServiceId($entry['class']),
                     'priority' => $this->priorityOverride($entry),
                     'index' => $position++,
                 ];
@@ -132,7 +132,7 @@ final class Router implements RouterInterface
 
             if ($expanded === null) {
                 $normalized[] = [
-                    'class' => $this->middlewareClass($entry),
+                    'class' => $this->middlewareServiceId($entry),
                     'priority' => null,
                     'index' => $position++,
                 ];
@@ -169,7 +169,7 @@ final class Router implements RouterInterface
                 : array_map('trim', explode(',', (string) $attributes['group']));
 
             if (in_array($alias, $groups, true)) {
-                $matches[] = $this->middlewareClass($class);
+                $matches[] = $this->middlewareServiceId($class);
             }
         }
 
@@ -179,10 +179,10 @@ final class Router implements RouterInterface
     /**
      * @return class-string
      */
-    private function middlewareClass(string $class): string
+    private function middlewareServiceId(string $class): string
     {
-        if (!class_exists($class)) {
-            throw new \InvalidArgumentException("Unknown middleware class or group alias [$class].");
+        if (!class_exists($class) && !interface_exists($class)) {
+            throw new \InvalidArgumentException("Unknown middleware service id or group alias [$class].");
         }
 
         return $class;
