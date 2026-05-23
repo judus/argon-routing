@@ -27,6 +27,8 @@ final class StackIntegrationTest extends TestCase
         $router->group(['web'], '', static function (RouterInterface $router): void {
             $router->get('/health', StackHealthController::class, [StackHeaderMiddleware::class], 'stack.health');
             $router->get('/hello/{name}', StackHelloController::class, [], 'stack.hello');
+            $router->get('/array-handler/{name}', [StackMethodController::class, 'show'], [], 'stack.array-handler');
+            $router->get('/string-handler/{name}', StackMethodController::class . '@show', [], 'stack.string-handler');
             $router->get('/text/{name}', StackTextController::class, [], 'stack.text');
         });
 
@@ -48,6 +50,22 @@ final class StackIntegrationTest extends TestCase
         self::assertJsonStringEqualsJsonString(
             '{"message":"Hello julien","name":"julien"}',
             (string) $hello->getBody()
+        );
+
+        $arrayHandler = $handler->handle($psr17->createServerRequest('GET', '/array-handler/route'));
+        self::assertSame(200, $arrayHandler->getStatusCode());
+        self::assertSame('application/json; charset=UTF-8', $arrayHandler->getHeaderLine('Content-Type'));
+        self::assertJsonStringEqualsJsonString(
+            '{"handler":"method","name":"route"}',
+            (string) $arrayHandler->getBody()
+        );
+
+        $stringHandler = $handler->handle($psr17->createServerRequest('GET', '/string-handler/cache'));
+        self::assertSame(200, $stringHandler->getStatusCode());
+        self::assertSame('application/json; charset=UTF-8', $stringHandler->getHeaderLine('Content-Type'));
+        self::assertJsonStringEqualsJsonString(
+            '{"handler":"method","name":"cache"}',
+            (string) $stringHandler->getBody()
         );
 
         $text = $handler->handle($psr17->createServerRequest('GET', '/text/router'));

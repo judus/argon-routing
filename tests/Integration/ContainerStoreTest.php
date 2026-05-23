@@ -147,4 +147,22 @@ final class ContainerStoreTest extends TestCase
 
         $store->add($route);
     }
+
+    public function testAddThrowsWhenStringMethodHandlerIsMalformed(): void
+    {
+        $container = new ArgonContainer();
+        $store = new ContainerStore($container);
+
+        $route = new Route(
+            method: 'GET',
+            name: 'malformed',
+            pattern: '/malformed',
+            handler: TestContainerStoreController::class . '@',
+        );
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Malformed handler definition');
+
+        $store->add($route);
+    }
 }

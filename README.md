@@ -70,6 +70,33 @@ request-handler resolver (see the main Argon documentation), requests will flow
 through the registered middleware stacks and invoke your controllers through the
 container.
 
+## Handler Contract
+
+Container-backed routes support these handler definitions:
+
+```php
+$router->get('/health', HealthController::class);
+$router->get('/users/{id}', [UsersController::class, 'show']);
+$router->get('/articles/{slug}', ArticlesController::class . '@show');
+```
+
+Route placeholders are forwarded to the container invocation as named arguments.
+Controller methods should declare those placeholders directly:
+
+```php
+final class UsersController
+{
+    public function show(string $id): array
+    {
+        return ['id' => $id];
+    }
+}
+```
+
+Do not expect a single `array $args` parameter in container-backed handlers. The
+container prepares controller invocations through reflection, so route arguments
+are mapped by name.
+
 ## Model / DTO Bindings via Interceptors
 
 Frameworks such as Laravel or Symfony implement “route model binding” inside the

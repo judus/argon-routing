@@ -10,3 +10,4 @@
 - Fixed route group expansion for middleware service IDs registered as interfaces.
 - Added stack integration coverage for container-backed routing and argon-middleware responders.
 - Documented the middleware service-id cache contract and made invalid middleware definitions fail with routing exceptions.
+- Documented the container-backed handler argument contract and covered array/string method handlers in stack tests.
