@@ -59,6 +59,12 @@ $matched->getArguments();    // ['id' => '42']
 $matched->getMiddlewares();  // [AuthMiddleware::class]
 ```
 
+Middleware passed to the router can be concrete middleware service IDs or group
+aliases from the container's `middleware.http` tag metadata. Route metadata stores
+the resolved container service IDs, not the original aliases, so the cached route
+stack can be handed directly to `maduser/argon-middleware`. Those service IDs may
+be concrete middleware classes or interfaces bound in the container.
+
 Once you hand the `RouteManager` instance to Argon’s middleware pipeline and
 request-handler resolver (see the main Argon documentation), requests will flow
 through the registered middleware stacks and invoke your controllers through the

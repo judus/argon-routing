@@ -42,6 +42,16 @@ final class RouterException extends RuntimeException
         return new self("Middleware [$serviceId] must resolve to Psr\\Http\\Server\\MiddlewareInterface (got: $type).");
     }
 
+    public static function forInvalidMiddlewareDefinition(): self
+    {
+        return new self('Invalid middleware definition provided to router.');
+    }
+
+    public static function forUnknownMiddlewareServiceId(string $serviceId): self
+    {
+        return new self("Unknown middleware service id or group alias [$serviceId].");
+    }
+
     public static function forMiddlewareRecursion(string $middlewareName): self
     {
         return new self("Infinite $middlewareName loop detected.");

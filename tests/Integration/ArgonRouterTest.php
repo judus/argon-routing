@@ -6,6 +6,7 @@ namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Middleware\Contracts\Middleware\DispatcherInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 use Maduser\Argon\Routing\Router;
 use Maduser\Argon\Routing\RouteManager;
@@ -151,6 +152,26 @@ final class ArgonRouterTest extends TestCase
         $registered = $routes->getRoutesFor('GET');
         self::assertSame([DispatcherInterface::class], $registered['/interface-middleware']['middlewares']);
         self::assertSame([DispatcherInterface::class], $pipelines->registeredStacks[0]->toArray());
+    }
+
+    public function testUnknownMiddlewareAliasFailsWithRoutingException(): void
+    {
+        $router = new Router(new ArgonContainer(), new RouteManager(), new RecordingPipelineManager());
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Unknown middleware service id or group alias [missing-alias].');
+
+        $router->get('/missing-middleware', DummyRequestHandler::class, ['missing-alias']);
+    }
+
+    public function testInvalidMiddlewareDefinitionFailsWithRoutingException(): void
+    {
+        $router = new Router(new ArgonContainer(), new RouteManager(), new RecordingPipelineManager());
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Invalid middleware definition provided to router.');
+
+        $router->get('/invalid-middleware', DummyRequestHandler::class, [new \stdClass()]);
     }
 
     /**

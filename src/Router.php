@@ -9,6 +9,7 @@ use Maduser\Argon\Container\ArgonContainer;
 use Maduser\Argon\Middleware\Contracts\MiddlewareStackInterface;
 use Maduser\Argon\Middleware\Contracts\PipelineManagerInterface;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
+use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\MiddlewareStack;
 
 final class Router implements RouterInterface
@@ -125,7 +126,7 @@ final class Router implements RouterInterface
             }
 
             if (!is_string($entry)) {
-                throw new \InvalidArgumentException('Invalid middleware definition provided to router.');
+                throw RouterException::forInvalidMiddlewareDefinition();
             }
 
             $expanded = $this->expandAlias($entry, $meta);
@@ -182,7 +183,7 @@ final class Router implements RouterInterface
     private function middlewareServiceId(string $class): string
     {
         if (!class_exists($class) && !interface_exists($class)) {
-            throw new \InvalidArgumentException("Unknown middleware service id or group alias [$class].");
+            throw RouterException::forUnknownMiddlewareServiceId($class);
         }
 
         return $class;
