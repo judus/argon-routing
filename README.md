@@ -4,7 +4,6 @@
 [![Build](https://github.com/judus/argon-routing/actions/workflows/php.yml/badge.svg)](https://github.com/judus/argon-routing/actions)
 [![codecov](https://codecov.io/gh/judus/argon-routing/branch/master/graph/badge.svg)](https://codecov.io/gh/judus/argon-routing)
 [![Psalm Level](https://shepherd.dev/github/judus/argon-routing/coverage.svg)](https://shepherd.dev/github/judus/argon-routing)
-[![Code Style](https://img.shields.io/badge/code%20style-PSR--12-brightgreen.svg)](https://www.php-fig.org/psr/psr-12/)
 [![Latest Version](https://img.shields.io/packagist/v/maduser/argon-routing.svg)](https://packagist.org/packages/maduser/argon-routing)
 [![Downloads](https://img.shields.io/packagist/dt/maduser/argon-routing.svg)](https://packagist.org/packages/maduser/argon-routing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
