@@ -1,5 +1,14 @@
 # Argon Routing
 
+[![PHP](https://img.shields.io/badge/php-8.2+-blue)](https://www.php.net/)
+[![Build](https://github.com/judus/argon-routing/actions/workflows/php.yml/badge.svg)](https://github.com/judus/argon-routing/actions)
+[![codecov](https://codecov.io/gh/judus/argon-routing/branch/master/graph/badge.svg)](https://codecov.io/gh/judus/argon-routing)
+[![Psalm Level](https://shepherd.dev/github/judus/argon-routing/coverage.svg)](https://shepherd.dev/github/judus/argon-routing)
+[![Code Style](https://img.shields.io/badge/code%20style-PSR--12-brightgreen.svg)](https://www.php-fig.org/psr/psr-12/)
+[![Latest Version](https://img.shields.io/packagist/v/maduser/argon-routing.svg)](https://packagist.org/packages/maduser/argon-routing)
+[![Downloads](https://img.shields.io/packagist/dt/maduser/argon-routing.svg)](https://packagist.org/packages/maduser/argon-routing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Argon Routing is the HTTP routing layer that powers the Argon ecosystem.  
 It is designed around the Argon container, the shared middleware pipeline, and
 the request-handler resolver. The library embraces those components to provide:
@@ -11,7 +20,7 @@ the request-handler resolver. The library embraces those components to provide:
 Because of those tight integrations, **Argon Routing is not intended for use
 outside the Argon stack**. It has hard runtime dependencies on:
 
-- `maduser/argon` (service container, result context, service providers);
+- `maduser/argon` (service container and service providers);
 - `maduser/argon-middleware` (pipeline manager/store).
 
 If you need a framework-agnostic router, you should look at an alternative.
