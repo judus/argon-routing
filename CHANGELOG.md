@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added closure handler support to the standalone dispatch middleware.
 - Documented the route not-found exception contract.
 - Fixed the local quality gate so it no longer opens coverage reports or mutates files.
 - Removed the runtime dependency leak from routing into Prophecy tag constants.

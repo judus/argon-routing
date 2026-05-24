@@ -39,48 +39,47 @@ final readonly class DispatchMiddleware implements MiddlewareInterface
         }
 
         $routeHandler = $route->getHandler();
-
-        if ($routeHandler instanceof Closure) {
-            // TODO: Future support for closure handlers
-            throw RouterException::forUnsupportedClosureRouteHandler();
-        }
-        $method = null;
-        if (is_array($routeHandler)) {
-            if (!isset($routeHandler[0]) || !is_string($routeHandler[0])) {
-                throw RouterException::forMalformedHandlerDefinition($routeHandler);
-            }
-
-            $serviceId = $routeHandler[0];
-            $method    = isset($routeHandler[1]) ? (string) $routeHandler[1] : null;
-        } else {
-            $serviceId = $routeHandler;
-        }
-
-        $invoker = $this->container->get($serviceId);
-
-        if ($serviceId === DispatchMiddleware::class) {
-            throw RouterException::forMiddlewareRecursion('DispatchMiddleware');
-        }
-
         $arguments = $route->getArguments();
 
-        if ($method !== null && $method !== '__invoke') {
-            $routeCallable = [$invoker, $method];
-
-            if (!is_callable($routeCallable)) {
-                $type = get_debug_type($invoker);
-                throw RouterException::forNonCallableHandler($serviceId, $type, $method);
-            }
-
-            $callable = static fn(): mixed => $routeCallable(...$arguments);
+        if ($routeHandler instanceof Closure) {
+            $callable = static fn(): mixed => $routeHandler($arguments);
         } else {
-            if (!is_callable($invoker)) {
-                $type = get_debug_type($invoker);
-                throw RouterException::forNonCallableHandler($serviceId, $type);
+            $method = null;
+            if (is_array($routeHandler)) {
+                if (!isset($routeHandler[0]) || !is_string($routeHandler[0])) {
+                    throw RouterException::forMalformedHandlerDefinition($routeHandler);
+                }
+
+                $serviceId = $routeHandler[0];
+                $method    = isset($routeHandler[1]) ? (string) $routeHandler[1] : null;
+            } else {
+                $serviceId = $routeHandler;
             }
 
-            /** @var callable(array<int|string, string>): mixed $invoker */
-            $callable = static fn(): mixed => $invoker($arguments);
+            $invoker = $this->container->get($serviceId);
+
+            if ($serviceId === DispatchMiddleware::class) {
+                throw RouterException::forMiddlewareRecursion('DispatchMiddleware');
+            }
+
+            if ($method !== null && $method !== '__invoke') {
+                $routeCallable = [$invoker, $method];
+
+                if (!is_callable($routeCallable)) {
+                    $type = get_debug_type($invoker);
+                    throw RouterException::forNonCallableHandler($serviceId, $type, $method);
+                }
+
+                $callable = static fn(): mixed => $routeCallable(...$arguments);
+            } else {
+                if (!is_callable($invoker)) {
+                    $type = get_debug_type($invoker);
+                    throw RouterException::forNonCallableHandler($serviceId, $type);
+                }
+
+                /** @var callable(array<int|string, string>): mixed $invoker */
+                $callable = static fn(): mixed => $invoker($arguments);
+            }
         }
 
         return $this->pipeline->handle(

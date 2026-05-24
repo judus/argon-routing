@@ -81,7 +81,7 @@ final class RouteDispatchTest extends TestCase
         $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
     }
 
-    public function testThrowsWhenRouteHandlerIsClosure(): void
+    public function testDispatchesClosureRouteHandler(): void
     {
         $container = new ArgonContainer();
         $pipeline = new RoutePipeline($container);
@@ -91,17 +91,23 @@ final class RouteDispatchTest extends TestCase
             method: 'GET',
             name: 'closure',
             pattern: '/closure',
-            handler: static fn(): string => 'nope'
+            handler: static fn(array $args): string => sprintf(
+                'closure:%s',
+                is_string($args['id'] ?? null) ? $args['id'] : 'missing'
+            ),
+            arguments: ['id' => '123']
         );
 
         $psr17 = new Psr17Factory();
         $request = $psr17->createServerRequest('GET', '/closure')
             ->withAttribute(MatchedRouteInterface::class, $route);
 
-        $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('Closure route handlers are not yet supported.');
+        $finalHandler = new RecordingFinalHandler($psr17->createResponse());
 
-        $middleware->process($request, new RecordingFinalHandler($psr17->createResponse()));
+        $response = $middleware->process($request, $finalHandler);
+
+        self::assertSame($finalHandler->getResponse(), $response);
+        self::assertSame('closure:123', $finalHandler->handledRequest?->getAttribute('rawResult'));
     }
 
     public function testThrowsWhenHandlerIsNotCallable(): void
