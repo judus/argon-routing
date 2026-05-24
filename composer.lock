@@ -90,11 +90,10 @@
             "dist": {
                 "type": "path",
                 "url": "/home/maduser/workspace/argon/packages/maduser-argon-middleware",
-                "reference": "1ecb2bfc41191a94656de920fb6f6295f1bbf48c"
+                "reference": "14295e130d36053b8d4fee45bf9b97a167528211"
             },
             "require": {
                 "maduser/argon": "dev-master",
-                "maduser/argon-support": "dev-master",
                 "php": "^8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -165,12 +164,16 @@
                     "@phpcs"
                 ]
             },
+            "license": [
+                "MIT"
+            ],
             "authors": [
                 {
                     "name": "Julien Duseyau",
                     "email": "julien.duseyau@gmail.com"
                 }
             ],
+            "description": "PSR-15 middleware pipeline infrastructure for the Argon runtime stack.",
             "transport-options": {
                 "relative": false
             }
