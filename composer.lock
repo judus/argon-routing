@@ -4,15 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dffb56351d9a9f3935d402181e28ea90",
+    "content-hash": "0d6bc11796190ca0be36611362be5741",
     "packages": [
         {
             "name": "maduser/argon",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/judus/argon.git",
+                "reference": "76bf216bbd190e3eb0f6c30bb98b2bbc38191ac5"
+            },
             "dist": {
-                "type": "path",
-                "url": "/home/maduser/workspace/argon/packages/maduser-argon",
-                "reference": "6a8330822b89401115903e12de31a2e46d3d701e"
+                "type": "zip",
+                "url": "https://api.github.com/repos/judus/argon/zipball/76bf216bbd190e3eb0f6c30bb98b2bbc38191ac5",
+                "reference": "76bf216bbd190e3eb0f6c30bb98b2bbc38191ac5",
+                "shasum": ""
             },
             "require": {
                 "nette/php-generator": "^4.2",
@@ -26,6 +32,7 @@
                 "squizlabs/php_codesniffer": "^4.0",
                 "vimeo/psalm": "^6.13"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -80,17 +87,21 @@
                 }
             ],
             "description": "A high-performance, modular, PSR-11 compliant dependency injection container for PHP.",
-            "transport-options": {
-                "relative": false
-            }
+            "time": "2026-05-21T07:47:46+00:00"
         },
         {
             "name": "maduser/argon-middleware",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/maduser/workspace/argon/packages/maduser-argon-middleware",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/judus/argon-middleware.git",
                 "reference": "636b5c256c29d4b742e3fd4d356c4bc1256d0a82"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/judus/argon-middleware/zipball/636b5c256c29d4b742e3fd4d356c4bc1256d0a82",
+                "reference": "636b5c256c29d4b742e3fd4d356c4bc1256d0a82",
+                "shasum": ""
             },
             "require": {
                 "maduser/argon": "dev-master",
@@ -108,6 +119,7 @@
                 "squizlabs/php_codesniffer": "^4.0",
                 "vimeo/psalm": "^6.13"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -174,17 +186,21 @@
                 }
             ],
             "description": "PSR-15 middleware pipeline infrastructure for the Argon runtime stack.",
-            "transport-options": {
-                "relative": false
-            }
+            "time": "2026-05-24T09:53:24+00:00"
         },
         {
             "name": "maduser/argon-support",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/maduser/workspace/argon/packages/maduser-argon-support",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/judus/argon-support.git",
                 "reference": "beae03d0f3f22db8a000d1e67027b2b83a52f744"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/judus/argon-support/zipball/beae03d0f3f22db8a000d1e67027b2b83a52f744",
+                "reference": "beae03d0f3f22db8a000d1e67027b2b83a52f744",
+                "shasum": ""
             },
             "require": {
                 "php": "^8.2",
@@ -198,6 +214,7 @@
                 "squizlabs/php_codesniffer": "^4.0",
                 "vimeo/psalm": "^6.13"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -263,9 +280,7 @@
                     "email": "julien.duseyau@gmail.com"
                 }
             ],
-            "transport-options": {
-                "relative": false
-            }
+            "time": "2026-05-24T09:32:08+00:00"
         },
         {
             "name": "nette/php-generator",

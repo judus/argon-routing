@@ -21,16 +21,19 @@
   ],
   "repositories": [
     {
-      "type": "path",
-      "url": "~/workspace/argon/packages/maduser-argon"
+      "type": "vcs",
+      "url": "https://github.com/judus/argon.git",
+      "no-api": true
     },
     {
-      "type": "path",
-      "url": "~/workspace/argon/packages/maduser-argon-middleware"
+      "type": "vcs",
+      "url": "https://github.com/judus/argon-middleware.git",
+      "no-api": true
     },
     {
-      "type": "path",
-      "url": "~/workspace/argon/packages/maduser-argon-support"
+      "type": "vcs",
+      "url": "https://github.com/judus/argon-support.git",
+      "no-api": true
     }
   ],
   "require": {
