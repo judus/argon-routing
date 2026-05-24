@@ -14,3 +14,4 @@
 - Documented the container-backed handler argument contract and covered array/string method handlers in stack tests.
 - Registered `RouteDispatcherMiddleware` under its concrete service id so compiled containers do not type it as the generic middleware dispatcher contract.
 - Tightened route middleware identifiers to PSR middleware class/interface strings before storing pipeline metadata.
+- Delegated routed handler results to the shared HTTP result responder contract instead of middleware result contexts.

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Middleware;
 
 use Closure;
-use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
-use Maduser\Argon\Middleware\ResultContext;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Exception\RouterException;
+use Maduser\Argon\Support\Contracts\ResultResponderInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -21,6 +20,7 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private ContainerInterface $container,
+        private ResultResponderInterface $responder,
     ) {
     }
 
@@ -73,16 +73,9 @@ final readonly class RouteDispatcherMiddleware implements MiddlewareInterface
         $args = $route->getArguments();
 
         /** @var callable(array<int|string, string>): mixed $invoker */
-        /** @var ResultContextInterface|null $context */
-        $context = $request->getAttribute(ResultContextInterface::class);
-        if (!$context instanceof ResultContextInterface) {
-            $context = new ResultContext();
-        }
+        /** @psalm-suppress MixedAssignment ResultResponderInterface intentionally accepts raw handler results. */
+        $result = $invoker($args);
 
-        $context->set($invoker($args));
-
-        return $handler->handle(
-            $request->withAttribute(ResultContextInterface::class, $context)
-        );
+        return $this->responder->respond($result, $request);
     }
 }

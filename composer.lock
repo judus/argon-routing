@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da9b07b8d1917a406caf632bc0666da0",
+    "content-hash": "dffb56351d9a9f3935d402181e28ea90",
     "packages": [
         {
             "name": "maduser/argon",
@@ -181,9 +181,10 @@
             "dist": {
                 "type": "path",
                 "url": "/home/maduser/workspace/argon/packages/maduser-argon-support",
-                "reference": "3eaa0bbcd37736543e862448d2b89dd293dbb9f3"
+                "reference": "beae03d0f3f22db8a000d1e67027b2b83a52f744"
             },
             "require": {
+                "php": "^8.2",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0"
             },
@@ -225,10 +226,7 @@
                     "vendor/bin/phpunit"
                 ],
                 "test:coverage": [
-                    "mkdir -p storage/phpunit/coverage/html && vendor/bin/phpunit --coverage-html storage/phpunit/coverage/html --coverage-clover storage/phpunit/coverage/clover.xml && open storage/phpunit/coverage/html/index.html"
-                ],
-                "ti": [
-                    "vendor/bin/phpunit --testsuite=integration"
+                    "mkdir -p .phpunit/coverage/html && vendor/bin/phpunit --coverage-html .phpunit/coverage/html --coverage-clover .phpunit/coverage/clover.xml"
                 ],
                 "tu": [
                     "vendor/bin/phpunit --testsuite=unit"
@@ -243,9 +241,8 @@
                     "find src/ | entr -r composer phpcs:fix"
                 ],
                 "check": [
-                    "@test:coverage",
+                    "@test",
                     "@psalm",
-                    "@phpcs:fix",
                     "@phpcs"
                 ],
                 "ci": [
@@ -6329,7 +6326,8 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "maduser/argon": 20,
-        "maduser/argon-middleware": 20
+        "maduser/argon-middleware": 20,
+        "maduser/argon-support": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

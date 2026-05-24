@@ -36,6 +36,7 @@
   "require": {
     "maduser/argon": "dev-master",
     "maduser/argon-middleware": "dev-master",
+    "maduser/argon-support": "dev-master",
     "psr/http-message": "^2.0",
     "psr/http-server-handler": "^1.0",
     "psr/http-server-middleware": "^1.0",

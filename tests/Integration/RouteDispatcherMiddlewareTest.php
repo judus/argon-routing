@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace Maduser\Argon\Routing\Tests\Integration;
 
-use Maduser\Argon\Middleware\Contracts\ResultContextInterface;
 use Maduser\Argon\Routing\Contracts\RouteInterface;
 use Maduser\Argon\Routing\Exception\RouterException;
 use Maduser\Argon\Routing\Middleware\RouteDispatcherMiddleware;
 use Maduser\Argon\Routing\Route;
 use Maduser\Argon\Routing\Tests\Integration\Fixtures\RecordingContainer;
-use Maduser\Argon\Routing\Tests\Integration\Fixtures\RecordingResultContext;
+use Maduser\Argon\Routing\Tests\Integration\Fixtures\RecordingResultResponder;
 use Maduser\Argon\Routing\Tests\Integration\Fixtures\RouteDispatcherRecordingHandler;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 final class RouteDispatcherMiddlewareTest extends TestCase
 {
-    public function testInvokesResolvedServiceInvokerAndStoresResult(): void
+    public function testInvokesResolvedServiceInvokerAndRespondsWithResult(): void
     {
         $route = new Route(
             method: 'GET',
@@ -36,19 +34,19 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         };
         $container = new RecordingContainer(['/items/{id}' => $invoker]);
 
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
 
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
         $response = $middleware->process(
             $psr17->createServerRequest('GET', '/items/42')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
 
-        self::assertInstanceOf(ResponseInterface::class, $response);
-        self::assertSame(['result:42'], $result->values);
+        self::assertSame('recording', $response->getHeaderLine('X-Argon-Responder'));
+        self::assertSame('result:42', (string) $response->getBody());
+        self::assertSame(['result:42'], $responder->results);
         self::assertSame(['/items/{id}'], $container->requestedIds);
     }
 
@@ -73,18 +71,17 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         );
 
         $container = new RecordingContainer([]);
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
 
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
         $middleware->process(
             $psr17->createServerRequest('GET', '/closure')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
 
-        self::assertSame(['closure:bar'], $result->values);
+        self::assertSame(['closure:bar'], $responder->results);
         self::assertSame([], $container->requestedIds);
     }
 
@@ -98,17 +95,16 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         );
 
         $container = new RecordingContainer([]);
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Infinite RouteDispatcherMiddleware loop detected.');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/loop')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
     }
@@ -124,17 +120,16 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         );
 
         $container = new NonCallableRouteContainer('/broken');
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Handler [' . BrokenController::class . '::show] is not callable (got: string).');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/broken')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
     }
@@ -149,17 +144,16 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         );
 
         $container = new RecordingContainer([]);
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Malformed handler definition');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/malformed')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
     }
@@ -174,17 +168,16 @@ final class RouteDispatcherMiddlewareTest extends TestCase
         );
 
         $container = new RecordingContainer([]);
-        $result = new RecordingResultContext();
+        $responder = new RecordingResultResponder();
         $psr17 = new Psr17Factory();
-        $middleware = new RouteDispatcherMiddleware($container);
+        $middleware = new RouteDispatcherMiddleware($container, $responder);
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Infinite RouteDispatcherMiddleware loop detected.');
 
         $middleware->process(
             $psr17->createServerRequest('GET', '/loop')
-                ->withAttribute(RouteInterface::class, $route)
-                ->withAttribute(ResultContextInterface::class, $result),
+                ->withAttribute(RouteInterface::class, $route),
             new RouteDispatcherRecordingHandler($psr17->createResponse())
         );
     }
