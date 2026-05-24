@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
+
+## [1.0.0] - 2026-05-24
 
 - Added closure handler support to the standalone dispatch middleware.
 - Documented the route not-found exception contract.
