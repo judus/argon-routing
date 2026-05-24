@@ -22,7 +22,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/judus/argon.git",
+      "url": "https://github.com/judus/argon-container.git",
       "no-api": true
     },
     {
@@ -37,7 +37,7 @@
     }
   ],
   "require": {
-    "maduser/argon": "dev-master",
+    "maduser/argon-container": "dev-master",
     "maduser/argon-middleware": "dev-master",
     "maduser/argon-support": "dev-master",
     "psr/http-message": "^2.0",

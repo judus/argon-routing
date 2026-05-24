@@ -19,7 +19,7 @@ the request-handler resolver. The library embraces those components to provide:
 Because of those tight integrations, **Argon Routing is not intended for use
 outside the Argon stack**. It has hard runtime dependencies on:
 
-- `maduser/argon` (service container and service providers);
+- `maduser/argon-container` (service container and service providers);
 - `maduser/argon-middleware` (pipeline manager/store).
 
 If you need a framework-agnostic router, you should look at an alternative.
@@ -30,7 +30,7 @@ If you need a framework-agnostic router, you should look at an alternative.
 composer require maduser/argon-routing
 ```
 
-Make sure your project already pulls in `maduser/argon` and
+Make sure your project already pulls in `maduser/argon-container` and
 `maduser/argon-middleware`; they are required at runtime. When developing
 locally inside the Argon monorepo, the path repositories configured there will
 resolve the packages automatically.
