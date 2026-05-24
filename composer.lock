@@ -90,7 +90,7 @@
             "dist": {
                 "type": "path",
                 "url": "/home/maduser/workspace/argon/packages/maduser-argon-middleware",
-                "reference": "14295e130d36053b8d4fee45bf9b97a167528211"
+                "reference": "636b5c256c29d4b742e3fd4d356c4bc1256d0a82"
             },
             "require": {
                 "maduser/argon": "dev-master",

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maduser\Argon\Routing\Tests\Integration;
 
 use Maduser\Argon\Container\ArgonContainer;
-use Maduser\Argon\Middleware\Provider\RequestHandlerServiceProvider;
+use Maduser\Argon\Middleware\Provider\MiddlewarePipelineServiceProvider;
 use Maduser\Argon\Routing\Contracts\RouterInterface;
 use Maduser\Argon\Routing\Provider\RouteServiceProvider;
 use Maduser\Argon\Support\Contracts\ResultResponderInterface;
@@ -79,7 +79,7 @@ final class StackIntegrationTest extends TestCase
         $container->set(ResultResponderInterface::class, StackResultResponder::class)->shared();
 
         $container->register([
-            RequestHandlerServiceProvider::class,
+            MiddlewarePipelineServiceProvider::class,
             RouteServiceProvider::class,
         ]);
 
